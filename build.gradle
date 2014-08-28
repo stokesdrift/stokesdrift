@@ -1,0 +1,85 @@
+
+// Apply plugins
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+dependencies {
+  compile 'javax.enterprise:cdi-api:1.1'
+
+  // compile "com.zaxxer:HikariCP:1.3.8"
+  compile "org.yaml:snakeyaml:1.14-SNAPSHOT"
+  compile "org.jruby:jruby-complete:1.7.11"
+  compile "io.undertow:undertow-core:1.0.1.Final"
+  compile "io.undertow:undertow-servlet:1.0.1.Final"
+
+  testCompile 'junit:junit:4.11'
+  testCompile 'org.jglue.cdi-unit:cdi-unit:3.0.1'
+
+}
+
+buildscript {
+  repositories {
+    mavenLocal()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    mavenCentral()
+  }
+}
+
+// loadProperties("${System.getProperty('user.home')}/.gradle/gradle.properties")
+loadProperties("build.properties")
+
+defaultTasks = ['assemble']
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+
+configurations {
+  provided
+  compile.extendsFrom provided
+  testCompile.extendsFrom provided
+}
+
+repositories {
+  mavenLocal()
+  maven { url 'http://deux.gemjars.org' }
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+  mavenCentral()
+}
+
+
+sourceSets {
+  main {
+    compileClasspath = compileClasspath + configurations.provided
+  }
+}
+
+artifacts {
+}
+
+
+
+def loadProperties(String sourceFileName) {
+  def config = new Properties()
+  def propFile = new File(sourceFileName)
+  if (propFile.canRead()) {
+    config.load(new FileInputStream(propFile))
+    for (Map.Entry property in config) {
+      project.ext[property.key] = property.value;
+    }
+  }
+}
+
+// Map the 'provided' dependency configuration to the appropriate IDEA visibility scopes.
+plugins.withType(IdeaPlugin) {
+  idea {
+    module {
+      scopes.PROVIDED.plus += configurations.provided
+      scopes.COMPILE.minus += configurations.provided
+      scopes.TEST.minus += configurations.provided
+      scopes.RUNTIME.minus += configurations.provided
+    }
+  }
+}
