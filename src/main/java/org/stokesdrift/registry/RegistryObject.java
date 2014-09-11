@@ -27,5 +27,4 @@ public class RegistryObject {
 		return object;
 	}
 	
-	
 }

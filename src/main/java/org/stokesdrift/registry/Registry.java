@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+// TODO implements javax.naming.Context
 // TODO make a configurable registry, bean registry
 public class Registry implements Map<String, RegistryObject> {
 	
