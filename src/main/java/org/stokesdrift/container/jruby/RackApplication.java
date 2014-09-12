@@ -1,15 +1,17 @@
-package org.stokesdrift.web;
-
-import javax.servlet.DispatcherType;
+package org.stokesdrift.container.jruby;
 
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ListenerInfo;
 
+import javax.inject.Named;
+import javax.servlet.DispatcherType;
+
 import org.jruby.rack.RackFilter;
 import org.jruby.rack.RackServletContextListener;
-import org.stokesdrift.config.ServerConfig;
+import org.stokesdrift.config.ApplicationConfig;
+import org.stokesdrift.container.Application;
 
 /**
  * Sets up the configuration for a rack application 
@@ -28,12 +30,13 @@ import org.stokesdrift.config.ServerConfig;
  * @author driedtoast
  *
  */
+@Named(value="rack_application")
 public class RackApplication implements Application {
 
 	private static final String RACK_FILTER = "RackFilter";
 
-	private ServerConfig config;
-	
+	private ApplicationConfig config;
+		
 	@Override
 	public DeploymentInfo getDeploymentInfo() {
 		// TODO app configuration 
@@ -44,7 +47,7 @@ public class RackApplication implements Application {
 		        .setContextPath("/")
 		        .addFilter(filter)
 		        .addFilterUrlMapping(RACK_FILTER, "/*", DispatcherType.ASYNC)
-		        .setDeploymentName(config.getAppName())
+		        .setDeploymentName(config.getName())
 		        .setClassLoader(ClassLoader.getSystemClassLoader());
 		setupInitParams(di);
 		return di;
@@ -58,7 +61,7 @@ public class RackApplication implements Application {
 	}
 
 	@Override
-	public void initializeConfig(ServerConfig config) {
+	public void initializeConfig(ApplicationConfig config) {
 		this.config = config;
 	}
 	

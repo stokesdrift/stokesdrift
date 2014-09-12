@@ -1,8 +1,8 @@
-package org.stokesdrift.web;
-
-import org.stokesdrift.config.ServerConfig;
+package org.stokesdrift.container;
 
 import io.undertow.servlet.api.DeploymentInfo;
+
+import org.stokesdrift.config.ApplicationConfig;
 /**
  * Contract of what applications need to provide to start up an application
  * 
@@ -20,6 +20,6 @@ public interface Application {
 	DeploymentInfo getDeploymentInfo();
 	
 	
-	void initializeConfig(ServerConfig config);
+	void initializeConfig(ApplicationConfig config);
 	
 }

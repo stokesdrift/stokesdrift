@@ -4,30 +4,42 @@ import io.undertow.Undertow;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.ListenerInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.stokesdrift.config.ServerConfig;
-import org.stokesdrift.web.Application;
+import javax.enterprise.context.ApplicationScoped;
 
+import org.apache.deltaspike.cdise.api.CdiContainer;
+import org.apache.deltaspike.cdise.api.CdiContainerLoader;
+import org.apache.deltaspike.cdise.api.ContextControl;
+import org.stokesdrift.config.ApplicationConfig;
+import org.stokesdrift.config.ServerConfig;
+import org.stokesdrift.container.Application;
+import org.stokesdrift.container.ApplicationBuilder;
+import org.stokesdrift.container.ApplicationBuilderFactory;
+import org.stokesdrift.web.listeners.CdiServletRequestListener;
 
 /**
- * Main starting point of loading the container and populating the registry for the micro services
- * to interact with each other
+ * Main starting point of loading the container and populating the registry for
+ * the micro services to interact with each other
+ * 
  * @author driedtoast
- *
+ * 
  */
 public class Server {
-	
+
 	private static final Logger logger = Logger.getLogger(Server.class.getName());
-	
+
 	private ServerConfig config;
 	private List<Application> applications;
 	private Undertow server;
-	
+	private CdiContainer cdiContainer;
+	private ContextControl applicationScopedContext;
+
 	public static void main(String[] args) {
 		Server server = new Server(args);
 		try {
@@ -37,40 +49,49 @@ public class Server {
 			server.stop();
 		}
 	}
-	
+
 	public Server(String[] args) {
 		// TODO parse out the options for the config file
 		// TODO parse out the config.ru path
-			
+		initialize(args);
 	}
-	
+
 	public void initialize(String[] args) {
 		config = createConfig(args);
-		applications = loadApplicationConfig(config);
-		
 	}
-	
-	
+
 	public ServerConfig createConfig(String[] args) {
 		// TODO load configuration from the root paths and directories and such
+		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=in_progress]");
 		ServerConfig serverConfig = new ServerConfig();
+		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete]");
 		return serverConfig;
 	}
-	
+
 	/**
 	 * Loads up the application configuration for an application
 	 * 
 	 * @param config
 	 * @return list of applications
 	 */
-	public List<Application> loadApplicationConfig(ServerConfig config) {
+	public List<Application> loadApplicationDefinitions(ServerConfig config) {
+		logger.log(Level.INFO, "stokesdrift:server:load_app_definitions[status=in_progress]");
+		ApplicationBuilderFactory appBuilderFactory = new ApplicationBuilderFactory();
 		List<Application> apps = new ArrayList<Application>();
-		// application.initializeConfig(ServerConfig config)
-		// TODO fancy stuff with the configuration that will load particular application configs
+		List<ApplicationConfig> appConfigs = config.getApplicationConfigs();
+		for (ApplicationConfig appConfig : appConfigs) {
+			ApplicationBuilder appBuilder = appBuilderFactory.getBuilder(appConfig.getType() + "_builder");
+			Application app = appBuilder.addConfig(appConfig).build();
+			// TODO add some debugging if app isn't able to be setup
+			if (app != null) {
+				apps.add(app);
+			}
+		}
+		logger.log(Level.INFO, "stokesdrift:server:load_app_definitions[status=complete]");
 		return apps;
 	}
-	
-	/** 
+
+	/**
 	 * Setup the deployment managers for a given set of applications
 	 * 
 	 * @param apps
@@ -78,8 +99,13 @@ public class Server {
 	 */
 	public List<DeploymentManager> deployApplications(List<Application> apps) {
 		List<DeploymentManager> deployManagers = new ArrayList<DeploymentManager>();
-		for(Application app: apps) {
-			DeploymentInfo deployInfo = app.getDeploymentInfo(); 
+		for (Application app : apps) {
+			DeploymentInfo deployInfo = app.getDeploymentInfo();
+			
+			// Add default listeners
+			ListenerInfo cdiListener = Servlets.listener(CdiServletRequestListener.class);
+			deployInfo.addListener(cdiListener);
+			
 			DeploymentManager deploymentManager = Servlets.defaultContainer().addDeployment(deployInfo);
 			try {
 				deploymentManager.deploy();
@@ -90,23 +116,44 @@ public class Server {
 		}
 		return deployManagers;
 	}
- 	
+
 	public void start() throws Exception {
-	   logger.log(Level.INFO, "stokesdrift:server:start[status=in_progress]");
-	   Undertow.Builder builder = Undertow.builder().addHttpListener(config.getPort(), config.getHost());
-	   List<DeploymentManager> managers = deployApplications(applications);
-	   for(DeploymentManager deploymentManager: managers) {
-		   builder.setHandler(deploymentManager.start());
-	   }
-	   server = builder.build();
-	   server.start();
+		logger.log(Level.INFO, "stokesdrift:server:start[status=in_progress]");
+
+		logger.log(Level.INFO, "stokesdrift:server:load_cdi_container[status=in_progress]");
+		cdiContainer = CdiContainerLoader.getCdiContainer();
+		cdiContainer.boot();
+		applicationScopedContext = cdiContainer.createContextControl();
+		applicationScopedContext.startContext(ApplicationScoped.class);
+
+		logger.log(Level.INFO, "stokesdrift:server:load_cdi_container[status=complete]");
+
+		applications = loadApplicationDefinitions(config);
+
+		Undertow.Builder builder = Undertow.builder().addHttpListener(config.getPort(), config.getHost());
+		List<DeploymentManager> managers = deployApplications(applications);
+		for (DeploymentManager deploymentManager : managers) {
+			builder.setHandler(deploymentManager.start());
+		}
+		server = builder.build();
+		server.start();
+		logger.log(Level.INFO, "stokesdrift:server:start[status=complete]");
 	}
 
 	public void stop() {
-	   logger.log(Level.WARNING, "stokesdrift:server:stop[status=in_progress]");
-	   if (server != null) {
-		   server.stop();
-	   }
+		logger.log(Level.WARNING, "stokesdrift:server:stop[status=in_progress]");
+		if (server != null) {
+			server.stop();
+		}
+
+		if (applicationScopedContext != null) {
+			applicationScopedContext.stopContext(ApplicationScoped.class);
+		}
+
+		if (cdiContainer != null) {
+			cdiContainer.shutdown();
+		}
+		logger.log(Level.INFO, "stokesdrift:server:stop[status=complete]");
 	}
-		
+
 }

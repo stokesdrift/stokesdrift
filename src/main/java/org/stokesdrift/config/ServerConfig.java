@@ -1,11 +1,21 @@
 package org.stokesdrift.config;
 
+import java.util.List;
+
 public class ServerConfig {
 
-	private String appName;
 	private String rootPath;
 	private int port = 8888;
 	private String host = "0.0.0.0";
+	private List<ApplicationConfig> applicationConfigs;
+
+	public List<ApplicationConfig> getApplicationConfigs() {
+		return applicationConfigs;
+	}
+
+	public void setApplicationConfigs(List<ApplicationConfig> applicationConfigs) {
+		this.applicationConfigs = applicationConfigs;
+	}
 
 	public String getHost() {
 		return host;
@@ -23,13 +33,6 @@ public class ServerConfig {
 		this.port = port;
 	}
 
-	public String getAppName() {
-		return appName;
-	}
-
-	public void setAppName(String appName) {
-		this.appName = appName;
-	}
 
 	public String getRootPath() {
 		return rootPath;

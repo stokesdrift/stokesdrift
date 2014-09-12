@@ -18,6 +18,8 @@ dependencies {
   compile "org.apache.deltaspike.core:deltaspike-core-impl:1.0.2"
   compile "org.apache.deltaspike.cdictrl:deltaspike-cdictrl-api:1.0.2"
   compile "org.apache.deltaspike.cdictrl:deltaspike-cdictrl-owb:1.0.2"
+  compile "org.apache.deltaspike.modules:deltaspike-servlet-module-api:1.0.2"
+  compile "org.apache.deltaspike.modules:deltaspike-servlet-module-impl:1.0.2"
   compile "org.jruby.rack:jruby-rack:1.1.14"
 
   testCompile 'junit:junit:4.11'
