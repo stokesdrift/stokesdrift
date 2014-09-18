@@ -30,7 +30,4 @@ Neccessary evils:
 Dependencies:
 * Undertow (web processes) - http://undertow.io/documentation/servlet/deployment.html
 * Quartz (scheduling) -
-
-
-Interesting projects:
-* Delta Spike  - https://deltaspike.apache.org/index.html
+* Delta Spike (cdi)  - https://deltaspike.apache.org/index.html

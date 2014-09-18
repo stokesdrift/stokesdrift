@@ -11,11 +11,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
-
-import org.apache.deltaspike.cdise.api.CdiContainer;
-import org.apache.deltaspike.cdise.api.CdiContainerLoader;
-import org.apache.deltaspike.cdise.api.ContextControl;
+import org.jboss.weld.environment.se.Weld;
+import org.jboss.weld.environment.se.WeldContainer;
 import org.stokesdrift.config.ApplicationConfig;
 import org.stokesdrift.config.ServerConfig;
 import org.stokesdrift.container.Application;
@@ -37,8 +34,8 @@ public class Server {
 	private ServerConfig config;
 	private List<Application> applications;
 	private Undertow server;
-	private CdiContainer cdiContainer;
-	private ContextControl applicationScopedContext;
+	private Weld weld;
+	private WeldContainer container; 
 
 	public static void main(String[] args) {
 		Server server = new Server(args);
@@ -64,6 +61,7 @@ public class Server {
 		// TODO load configuration from the root paths and directories and such
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=in_progress]");
 		ServerConfig serverConfig = new ServerConfig();
+		// TODO derive configs and locations
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete]");
 		return serverConfig;
 	}
@@ -76,11 +74,11 @@ public class Server {
 	 */
 	public List<Application> loadApplicationDefinitions(ServerConfig config) {
 		logger.log(Level.INFO, "stokesdrift:server:load_app_definitions[status=in_progress]");
-		ApplicationBuilderFactory appBuilderFactory = new ApplicationBuilderFactory();
+		ApplicationBuilderFactory factory = container.instance().select(ApplicationBuilderFactory.class).get();
 		List<Application> apps = new ArrayList<Application>();
 		List<ApplicationConfig> appConfigs = config.getApplicationConfigs();
 		for (ApplicationConfig appConfig : appConfigs) {
-			ApplicationBuilder appBuilder = appBuilderFactory.getBuilder(appConfig.getType() + "_builder");
+			ApplicationBuilder appBuilder = factory.getBuilder(appConfig.getType());
 			Application app = appBuilder.addConfig(appConfig).build();
 			// TODO add some debugging if app isn't able to be setup
 			if (app != null) {
@@ -121,10 +119,8 @@ public class Server {
 		logger.log(Level.INFO, "stokesdrift:server:start[status=in_progress]");
 
 		logger.log(Level.INFO, "stokesdrift:server:load_cdi_container[status=in_progress]");
-		cdiContainer = CdiContainerLoader.getCdiContainer();
-		cdiContainer.boot();
-		applicationScopedContext = cdiContainer.createContextControl();
-		applicationScopedContext.startContext(ApplicationScoped.class);
+		weld = new Weld();
+		container = weld.initialize();
 
 		logger.log(Level.INFO, "stokesdrift:server:load_cdi_container[status=complete]");
 
@@ -146,13 +142,7 @@ public class Server {
 			server.stop();
 		}
 
-		if (applicationScopedContext != null) {
-			applicationScopedContext.stopContext(ApplicationScoped.class);
-		}
-
-		if (cdiContainer != null) {
-			cdiContainer.shutdown();
-		}
+		if (weld != null) weld.shutdown();
 		logger.log(Level.INFO, "stokesdrift:server:stop[status=complete]");
 	}
 

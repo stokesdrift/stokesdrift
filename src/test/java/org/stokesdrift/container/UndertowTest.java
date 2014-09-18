@@ -1,27 +1,22 @@
 package org.stokesdrift.container;
 
-import javax.servlet.DispatcherType;
-
-import org.jruby.rack.RackFilter;
-import org.jruby.rack.RackServletContextListener;
-
-import com.mchange.v2.sql.filter.FilterStatement;
-
 import io.undertow.Undertow;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.FilterInfo;
-import io.undertow.servlet.api.FilterMappingInfo;
-import io.undertow.servlet.api.FilterMappingInfo.MappingType;
 import io.undertow.servlet.api.ListenerInfo;
-import io.undertow.servlet.api.ServletInfo;
-import junit.framework.TestCase;
 
-public class UndertowTest extends TestCase {
+import javax.servlet.DispatcherType;
+
+import org.jruby.rack.RackFilter;
+import org.jruby.rack.RackServletContextListener;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class UndertowTest {
 	
+	@Test
 	public void testUndertowLoading() throws Exception {
 		int port = 8888;
 		// ServletInfo servletInfo = Servlets.servlet("", YourServlet.class).setAsyncSupported(true)
@@ -44,7 +39,8 @@ public class UndertowTest extends TestCase {
 			        .addHttpListener(port, "localhost")
 			        .setHandler(deploymentManager.start())
 			        .build();
-			server.start();
+		Assert.assertNotNull(server);
+		//	server.start();
 
 	}
 

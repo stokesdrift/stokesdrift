@@ -1,18 +1,28 @@
 package org.stokesdrift.container;
 
-import java.util.List;
+import java.util.Iterator;
 
-import org.apache.deltaspike.core.api.provider.BeanProvider;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+
+import org.jboss.weld.literal.NamedLiteral;
+
+
 
 public class ApplicationBuilderFactory {
 
+	@Inject @Any
+	Instance<ApplicationBuilder> builder;
+	
 	public ApplicationBuilder getBuilder(String appType) {
-		return BeanProvider.getContextualReference(appType, false, ApplicationBuilder.class);
+		appType = new StringBuilder(appType).append("_builder").toString();		
+		return builder.select(new NamedLiteral(appType) ).get();
 	}
 	
 	
-	public List<ApplicationBuilder> list() {
-		return BeanProvider.getContextualReferences(ApplicationBuilder.class, false);
+	public Iterator<ApplicationBuilder> list() {		
+		return builder.iterator();
 	}
 	
 }

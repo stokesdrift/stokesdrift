@@ -12,13 +12,13 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
-import junit.framework.TestCase;
-
-import org.jglue.cdiunit.internal.CdiUnitContext;
+import org.junit.Assert;
+import org.junit.Test;
 import org.stokesdrift.config.RuntimeType;
 
-public class RegistryTest extends TestCase {
+public class RegistryTest {
 
+	@Test
 	public void testRegistrySetup() {
 		Registry registry = new Registry();
 
@@ -27,19 +27,18 @@ public class RegistryTest extends TestCase {
 
 		registry.put("myObject", regObject);
 
-		assertNotNull(registry.get("myObject"));
-		assertEquals(RuntimeType.RUBY, registry.get("myObject").getRuntimeType());
-		
-		
+		Assert.assertNotNull(registry.get("myObject"));
+		Assert.assertEquals(RuntimeType.RUBY, registry.get("myObject").getRuntimeType());
 		
 	}
 	
+	@Test
 	public void testCdi() {
 		CDIProvider provider = null;
 		CDI<Object> cdi = provider.getCDI();
 		// cdi.select(arg0)
 		
-		CdiUnitContext context = null;
+		// CdiUnitContext context = null;
 		
 	}
 	

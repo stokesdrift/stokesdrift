@@ -21,13 +21,8 @@ package org.stokesdrift.web.listeners;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.RequestScoped;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
-
-import org.apache.deltaspike.cdise.api.CdiContainer;
-import org.apache.deltaspike.cdise.api.CdiContainerLoader;
-import org.apache.deltaspike.cdise.api.ContextControl;
 
 /**
  * Dervived from https://github.com/apache/deltaspike/blob/master/deltaspike/cdictrl/servlet/src/main/java/org/apache/deltaspike/cdise/servlet/CdiServletRequestListener.java
@@ -36,29 +31,21 @@ import org.apache.deltaspike.cdise.api.ContextControl;
 public class CdiServletRequestListener implements ServletRequestListener
 {
     private static final Logger LOG = Logger.getLogger(CdiServletRequestListener.class.getName());
-    private static final String CDI_REQ_CONTEXT = "cdiRequestContext";
+    // private static final String CDI_REQ_CONTEXT = "cdiRequestContext";
 
     @Override
     public void requestDestroyed(ServletRequestEvent servletRequestEvent)
     {
         LOG.log(Level.FINER,"Request done.");
-        ContextControl contextControl = (ContextControl)servletRequestEvent.getServletRequest()
-                .getAttribute(CDI_REQ_CONTEXT);
-        contextControl.stopContext(RequestScoped.class);
+        // context = container.getBeanManager().getContext(RequestScoped.class);		
     }
 
     @Override
     public void requestInitialized(ServletRequestEvent servletRequestEvent)
     {
         LOG.log(Level.FINER,"Incoming request.");
-        ContextControl contextControl = getContextControl();
-        servletRequestEvent.getServletRequest().setAttribute(CDI_REQ_CONTEXT, contextControl);
-        contextControl.startContext(RequestScoped.class);
+//        servletRequestEvent.getServletRequest().setAttribute(CDI_REQ_CONTEXT, contextControl);
+//        contextControl.startContext(RequestScoped.class);
     }
 
-    private ContextControl getContextControl()
-    {
-        CdiContainer container = CdiContainerLoader.getCdiContainer();
-        return container.createContextControl();
-    }
 }
