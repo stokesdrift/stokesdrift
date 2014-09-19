@@ -6,6 +6,7 @@ public class ApplicationConfig {
 	private String type = "rack";
 	
 	
+	
 	public String getType() {
 		return type;
 	}

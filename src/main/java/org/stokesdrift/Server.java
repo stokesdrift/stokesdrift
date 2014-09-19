@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.stokesdrift.config.ApplicationConfig;
+import org.stokesdrift.config.Options;
 import org.stokesdrift.config.ServerConfig;
 import org.stokesdrift.container.Application;
 import org.stokesdrift.container.ApplicationBuilder;
@@ -54,13 +55,14 @@ public class Server {
 	}
 
 	public void initialize(String[] args) {
-		config = createConfig(args);
+		Options options = new Options(args);
+		config = createConfig(options);
 	}
 
-	public ServerConfig createConfig(String[] args) {
+	public ServerConfig createConfig(Options options) {
 		// TODO load configuration from the root paths and directories and such
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=in_progress]");
-		ServerConfig serverConfig = new ServerConfig();
+		ServerConfig serverConfig = new ServerConfig(options);
 		// TODO derive configs and locations
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete]");
 		return serverConfig;

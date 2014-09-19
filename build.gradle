@@ -37,13 +37,6 @@ defaultTasks = ['assemble']
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
-
-configurations {
-  provided
-  compile.extendsFrom provided
-  testCompile.extendsFrom provided
-}
-
 repositories {
   mavenLocal()
   maven { url 'http://deux.gemjars.org' }
@@ -54,7 +47,7 @@ repositories {
 
 sourceSets {
   main {
-    compileClasspath = compileClasspath + configurations.provided
+    compileClasspath = compileClasspath
   }
 }
 
@@ -70,18 +63,6 @@ def loadProperties(String sourceFileName) {
     config.load(new FileInputStream(propFile))
     for (Map.Entry property in config) {
       project.ext[property.key] = property.value;
-    }
-  }
-}
-
-// Map the 'provided' dependency configuration to the appropriate IDEA visibility scopes.
-plugins.withType(IdeaPlugin) {
-  idea {
-    module {
-      scopes.PROVIDED.plus += configurations.provided
-      scopes.COMPILE.minus += configurations.provided
-      scopes.TEST.minus += configurations.provided
-      scopes.RUNTIME.minus += configurations.provided
     }
   }
 }

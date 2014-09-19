@@ -31,3 +31,7 @@ Dependencies:
 * Undertow (web processes) - http://undertow.io/documentation/servlet/deployment.html
 * Quartz (scheduling) -
 * Delta Spike (cdi)  - https://deltaspike.apache.org/index.html
+
+
+TODO
+* Fix the test resource pathing via gradle build

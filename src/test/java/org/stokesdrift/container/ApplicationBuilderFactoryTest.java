@@ -1,6 +1,8 @@
 package org.stokesdrift.container;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -41,13 +43,6 @@ public class ApplicationBuilderFactoryTest {
 	@Test
 	public void testContext() {
 		Assert.assertTrue(context.isActive());
-
-		Set<Bean<?>> beans  = container.getBeanManager().getBeans("rack_builder");
-		Iterator<Bean<?>> iter = beans.iterator();
-		while(iter.hasNext()) {
-			Bean<?> bean = iter.next();
-			System.out.println("Bean name " + bean.getName());
-		}
 		ApplicationBuilderFactory builder = container.instance().select(ApplicationBuilderFactory.class).get();
 		Assert.assertNotNull(builder);
 		
@@ -55,11 +50,12 @@ public class ApplicationBuilderFactoryTest {
 
 		Assert.assertFalse(builder.builder.isUnsatisfied());
 		Iterator<ApplicationBuilder> builders = builder.builder.iterator();
+		List<ApplicationBuilder> builderList = new ArrayList<ApplicationBuilder>();
 		while(builders.hasNext()) {
 			ApplicationBuilder builder_temp = builders.next();
-			System.out.println(builder_temp);
-			
+			builderList.add(builder_temp);
 		}
+		Assert.assertTrue(builderList.size() > 0 );
 		
 		ApplicationBuilder appBuilder = container.instance().select(ApplicationBuilder.class).get();
 		Assert.assertNotNull(appBuilder);
@@ -71,14 +67,16 @@ public class ApplicationBuilderFactoryTest {
 		container.event().select(ApplicationBuilder.class, InitializedLiteral.APPLICATION).fire(new RackApplicationBuilder(null));
 		
 		ApplicationBuilder builder = container.instance().select(ApplicationBuilder.class).get();
-		System.out.println(builder);
+		Assert.assertNotNull(builder);
+
 		Set<Bean<?>> builders = container.getBeanManager().getBeans("rack_builder");
-		System.out.println(builders);
 		Iterator<Bean<?>> iter = builders.iterator();
+		List<Class<?>> names = new ArrayList<Class<?>>();
 		while(iter.hasNext()) {
 			Bean<?> bean = iter.next();
-			System.out.println(bean.getClass());
+			names.add(bean.getClass());
 		}
+		Assert.assertTrue(names.size() > 0 );
 	}
 	
 	
