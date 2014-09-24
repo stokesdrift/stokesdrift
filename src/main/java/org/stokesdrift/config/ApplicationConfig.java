@@ -3,10 +3,20 @@ package org.stokesdrift.config;
 public class ApplicationConfig {
 	private String name;
 	private String rootUrlPath = "/";
+	
+	// TODO type should be based on the configuration file
 	private String type = "rack";
 	
+	private String appFile = "config.ru";
 	
-	
+	public String getAppFile() {
+		return appFile;
+	}
+
+	public void setAppFile(String appFile) {
+		this.appFile = appFile;
+	}
+
 	public String getType() {
 		return type;
 	}

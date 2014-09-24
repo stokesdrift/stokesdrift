@@ -2,12 +2,11 @@ package org.stokesdrift.config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
-import org.yecht.IoFileRead;
-import org.yecht.Parser;
 
 public class ServerConfig {
 	
@@ -24,6 +23,7 @@ public class ServerConfig {
 	}
 	
 	// 
+	@SuppressWarnings("rawtypes")
 	public void load() throws Exception {
 		String rootPath = options.getValue(Options.Key.ROOT_PATH);
 		String configFile = options.getValue(Options.Key.CONFIG_FILE);
@@ -34,15 +34,21 @@ public class ServerConfig {
 		
 		Yaml yaml = new Yaml();
 		Map yamlResults = yaml.loadAs(fis, Map.class);
-		System.out.println(yamlResults);
-		host = yamlResults.get("host").toString();
 		
+		Map serverConfig = (Map)yamlResults.get("server");
+		host = serverConfig.get("host").toString();
+		port = Integer.parseInt(serverConfig.get("port").toString());
 		
-//		Parser parser = org.yecht.Parser.newParser();
-//		parser.file(fis, new IoFileRead.Default());
-//		Object parsedObject = parser.parse();
-//		System.out.println(parsedObject);
-//		
+		List apps = (List)yamlResults.get("apps");
+		applicationConfigs = new ArrayList<ApplicationConfig>();
+		for(Object app: apps) {
+			Map appYaml = (Map)app;
+			ApplicationConfig appConfig = new ApplicationConfig();
+			appConfig.setName(appYaml.get("name").toString());
+			appConfig.setRootUrlPath(appYaml.get("url_path").toString());
+			appConfig.setAppFile(appYaml.get("app_file").toString());
+			applicationConfigs.add(appConfig);
+		}
 		
 	}
 	

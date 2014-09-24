@@ -3,6 +3,6 @@ server:
  host: 127.0.0.1
 apps:
  -
-   config: config.ru
+   app_file: config.ru
    name: "Example"
    url_path: "/"
