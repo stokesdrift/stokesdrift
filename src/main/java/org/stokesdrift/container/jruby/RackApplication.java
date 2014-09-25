@@ -44,16 +44,14 @@ public class RackApplication implements Application {
 		
 	@Override
 	public DeploymentInfo getDeploymentInfo() {
-		// TODO app configuration 
 		FilterInfo filter = Servlets.filter(RACK_FILTER, RackFilter.class);
-		
 		ListenerInfo listenerInfo = Servlets.listener(RackServletContextListener.class);
-
+		
 		DeploymentInfo di = new DeploymentInfo()
-				.addListener(listenerInfo)
+				.addListener(listenerInfo)				
 		        .setContextPath(config.getRootUrlPath())
 		        .addFilter(filter)
-		        .addFilterUrlMapping(RACK_FILTER, "/*", DispatcherType.ASYNC)
+		        .addFilterUrlMapping(RACK_FILTER, "/*", DispatcherType.REQUEST)
 		        .setDeploymentName(config.getName())
 		        .setClassLoader(ClassLoader.getSystemClassLoader());
 		setupInitParams(di);
@@ -61,7 +59,6 @@ public class RackApplication implements Application {
 	}
 	
 	protected void setupInitParams(DeploymentInfo deployInfo) {
-		// TODO add jruby-rack context params
 		deployInfo.addInitParameter("jruby.runtime.init.threads", "1");
 		deployInfo.addInitParameter("rackup", getRackupString());
 		deployInfo.addInitParameter("app.root", config.getRootPath()); 
