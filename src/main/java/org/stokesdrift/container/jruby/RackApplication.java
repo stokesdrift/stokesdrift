@@ -1,5 +1,8 @@
 package org.stokesdrift.container.jruby;
 
+import java.io.File;
+import java.io.FileInputStream;
+
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
@@ -10,8 +13,10 @@ import javax.servlet.DispatcherType;
 
 import org.jruby.rack.RackFilter;
 import org.jruby.rack.RackServletContextListener;
+import org.jruby.rack.util.IOHelpers;
 import org.stokesdrift.config.ApplicationConfig;
 import org.stokesdrift.container.Application;
+import org.xnio.IoUtils;
 
 /**
  * Sets up the configuration for a rack application 
@@ -41,10 +46,12 @@ public class RackApplication implements Application {
 	public DeploymentInfo getDeploymentInfo() {
 		// TODO app configuration 
 		FilterInfo filter = Servlets.filter(RACK_FILTER, RackFilter.class);
+		
 		ListenerInfo listenerInfo = Servlets.listener(RackServletContextListener.class);
+
 		DeploymentInfo di = new DeploymentInfo()
 				.addListener(listenerInfo)
-		        .setContextPath("/")
+		        .setContextPath(config.getRootUrlPath())
 		        .addFilter(filter)
 		        .addFilterUrlMapping(RACK_FILTER, "/*", DispatcherType.ASYNC)
 		        .setDeploymentName(config.getName())
@@ -55,11 +62,33 @@ public class RackApplication implements Application {
 	
 	protected void setupInitParams(DeploymentInfo deployInfo) {
 		// TODO add jruby-rack context params
-        
-		// .addInitParameter(name, value)
-		
+		deployInfo.addInitParameter("jruby.runtime.init.threads", "1");
+		deployInfo.addInitParameter("rackup", getRackupString());
+		deployInfo.addInitParameter("app.root", config.getRootPath()); 
+		deployInfo.addInitParameter("jruby.rack.debug.load", "true");
+		StringBuilder gemPath = new StringBuilder(config.getRootPath());
+		gemPath.append(File.separator);
+		gemPath.append("vendor").append(File.separator).append("jruby");
+		gemPath.append(File.separator).append("1.9"); // TODO needs to come from a config
+		gemPath.append(File.separator).append("gems"); // TODO need to figure out based on cache vs bundle
+		deployInfo.addInitParameter("gem.path", gemPath.toString());
+		deployInfo.addInitParameter("jruby.rack.layout_class", "RailsFilesystemLayout");
+		deployInfo.addInitParameter("jruby.rack.logging.name", "jul");		
 	}
 
+	protected String getRackupString() {
+		try {
+		  File file = new File(config.getRootPath() + File.separator + config.getAppFile());
+		  FileInputStream fis = new FileInputStream(file);
+		  String script = IOHelpers.inputStreamToString(fis);
+		  script = "$:.unshift('"+config.getRootPath()+"/app')\n" + script;
+		  return script;
+		} catch (Exception e) {
+			e.printStackTrace();
+		  return null;
+		}
+	}
+	
 	@Override
 	public void initializeConfig(ApplicationConfig config) {
 		this.config = config;

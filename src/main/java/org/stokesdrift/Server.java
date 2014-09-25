@@ -49,8 +49,6 @@ public class Server {
 	}
 
 	public Server(String[] args) {
-		// TODO parse out the options for the config file
-		// TODO parse out the config.ru path
 		initialize(args);
 	}
 
@@ -60,11 +58,15 @@ public class Server {
 	}
 
 	public ServerConfig createConfig(Options options) {
-		// TODO load configuration from the root paths and directories and such
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=in_progress]");
-		ServerConfig serverConfig = new ServerConfig(options);
-		// TODO derive configs and locations
-		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete]");
+		ServerConfig serverConfig = new ServerConfig(options);		
+		try {
+			serverConfig.load();
+			logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete]");
+		} catch(Throwable t) {
+			logger.log(Level.SEVERE, "stokesdrift:server:load_configuration[status=failed]", t);
+			serverConfig = null;
+		}		
 		return serverConfig;
 	}
 

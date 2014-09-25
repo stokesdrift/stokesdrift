@@ -25,7 +25,7 @@ public class ServerConfig {
 	// 
 	@SuppressWarnings("rawtypes")
 	public void load() throws Exception {
-		String rootPath = options.getValue(Options.Key.ROOT_PATH);
+		rootPath = options.getValue(Options.Key.ROOT_PATH);
 		String configFile = options.getValue(Options.Key.CONFIG_FILE);
 		StringBuilder fileName = new StringBuilder(rootPath).append(File.separator).append(configFile);
 		File file = new File(fileName.toString());
@@ -43,10 +43,12 @@ public class ServerConfig {
 		applicationConfigs = new ArrayList<ApplicationConfig>();
 		for(Object app: apps) {
 			Map appYaml = (Map)app;
-			ApplicationConfig appConfig = new ApplicationConfig();
+			ApplicationConfig appConfig = new ApplicationConfig(this);
 			appConfig.setName(appYaml.get("name").toString());
 			appConfig.setRootUrlPath(appYaml.get("url_path").toString());
 			appConfig.setAppFile(appYaml.get("app_file").toString());
+			// TODO have an app config that will resolve the root
+			appConfig.setRootPath(rootPath);
 			applicationConfigs.add(appConfig);
 		}
 		

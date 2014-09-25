@@ -1,3 +1,7 @@
+class ExampleRack
+  def call(env)
+    [200, {'Content-Type' => 'text/plain'}, "filling in with stats and such" ]
+  end
+end
 
-
-puts "hellow world"
+run ExampleRack.new
