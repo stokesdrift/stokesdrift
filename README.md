@@ -29,9 +29,8 @@ Neccessary evils:
 
 Dependencies:
 * Undertow (web processes) - http://undertow.io/documentation/servlet/deployment.html
-* Quartz (scheduling) -
-* Delta Spike (cdi)  - https://deltaspike.apache.org/index.html
-
+* Weld
+* Jruby Rack
 
 TODO
 * Fix the test resource pathing via gradle build

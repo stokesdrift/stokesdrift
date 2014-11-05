@@ -4,6 +4,8 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 dependencies {
   compile 'javax.enterprise:cdi-api:1.1'
@@ -29,8 +31,7 @@ buildscript {
   }
 }
 
-// loadProperties("${System.getProperty('user.home')}/.gradle/gradle.properties")
-loadProperties("build.properties")
+loadProperties("${System.getProperty('user.home')}/gradle.properties")
 
 defaultTasks = ['assemble']
 
@@ -51,10 +52,24 @@ sourceSets {
   }
 }
 
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
 artifacts {
+  archives javadocJar, sourcesJar
 }
 
 
+signing {
+    sign configurations.archives
+}
 
 def loadProperties(String sourceFileName) {
   def config = new Properties()
@@ -63,6 +78,51 @@ def loadProperties(String sourceFileName) {
     config.load(new FileInputStream(propFile))
     for (Map.Entry property in config) {
       project.ext[property.key] = property.value;
+    }
+  }
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+    
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'Stokes Drift Server'
+        packaging 'jar' 
+        description 'Service Platform for the modern age'
+        url 'http://www.stokesdrift.com'
+
+        scm {
+          connection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
+          developerConnection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
+          url 'git@github.com:stokesdrift/stokesdrift.git'
+        }
+        
+        licenses {
+          license {
+            name 'MIT License'
+            url 'http://www.opensource.org/licenses/mit-license.php'
+          }
+        }
+
+        developers {
+          developer {
+            id 'driedtoast'
+            name 'Daniel Marchant'
+            email 'driedtoast@gmail.com'
+          }
+        }
+      }
     }
   }
 }
