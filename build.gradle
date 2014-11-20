@@ -53,6 +53,7 @@ repositories {
 sourceSets {
   main {
     compileClasspath = compileClasspath
+    resources.srcDirs = ['src/main/ruby', 'src/main/resources']
   }
 }
 
@@ -70,6 +71,16 @@ artifacts {
   archives javadocJar, sourcesJar
 }
 
+test.doFirst {
+    copy {
+        from 'build/resources/main/META-INF/beans.xml'
+        into 'build/classes/main/META-INF/'
+    }
+    copy {
+        from 'build/resources/test/META-INF/beans.xml'
+        into 'build/classes/test/META-INF/'
+    }
+}
 
 signing {
     sign configurations.archives
@@ -89,7 +100,7 @@ def loadProperties(String sourceFileName) {
 uploadArchives {
   repositories {
     mavenDeployer {
-    
+
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
@@ -102,7 +113,7 @@ uploadArchives {
 
       pom.project {
         name 'Stokes Drift Server'
-        packaging 'jar' 
+        packaging 'jar'
         description 'Service Platform for the modern age'
         url 'http://www.stokesdrift.com'
         scm {
@@ -110,7 +121,7 @@ uploadArchives {
           developerConnection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
           url 'git@github.com:stokesdrift/stokesdrift.git'
         }
-        
+
         licenses {
           license {
             name 'MIT License'

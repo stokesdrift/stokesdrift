@@ -10,10 +10,15 @@ Gem::Specification.new do |spec|
   spec.license       = "MIT"
 
 
+  spec.files += Dir['build/libs/**/*']
+  spec.bindir = 'bin'
+  spec.executables << 'stokesdrift'
+
   #spec.add_dependency 'json'
   #spec.add_dependency 'thread_safe', '~> 0.1'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '~> 2.14.1'
+
 end

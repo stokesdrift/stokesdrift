@@ -61,6 +61,7 @@ public class Server {
 
 	public ServerConfig createConfig(Options options) {
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=in_progress]");
+		System.setProperty("org.jboss.weld.se.archive.isolation", "false");
 		ServerConfig serverConfig = new ServerConfig(options);		
 		try {
 			serverConfig.load();
