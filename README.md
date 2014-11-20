@@ -3,7 +3,6 @@
 
 Coming soon, under construction, all that sort of jazz
 
-
 ## Target feature set ##
 
 * Ability to create services that have a start / stop runtime
@@ -34,3 +33,8 @@ Dependencies:
 
 TODO
 * Fix the test resource pathing via gradle build
+* Startup and including of the resources inclusion
+
+
+## Testing out ##
+run `STOKES_DRIFT_OPTS="-r src/test/resources/examples" gradle run`

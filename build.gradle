@@ -6,6 +6,7 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'application'
 
 dependencies {
   compile 'javax.enterprise:cdi-api:1.1'
@@ -31,12 +32,15 @@ buildscript {
   }
 }
 
+mainClassName = 'org.stokesdrift.Server'
+
 loadProperties("${System.getProperty('user.home')}/gradle.properties")
 
 defaultTasks = ['assemble']
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
+mainClassName = "org.stokesdrift.Server"
 
 repositories {
   mavenLocal()
@@ -101,7 +105,6 @@ uploadArchives {
         packaging 'jar' 
         description 'Service Platform for the modern age'
         url 'http://www.stokesdrift.com'
-
         scm {
           connection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
           developerConnection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'

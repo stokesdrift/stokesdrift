@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.enterprise.inject.spi.Extension;
+
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.stokesdrift.config.ApplicationConfig;
@@ -125,7 +127,6 @@ public class Server {
 		logger.log(Level.INFO, "stokesdrift:server:load_cdi_container[status=in_progress]");
 		weld = new Weld();
 		container = weld.initialize();
-
 		logger.log(Level.INFO, "stokesdrift:server:load_cdi_container[status=complete]");
 
 		applications = loadApplicationDefinitions(config);

@@ -52,6 +52,14 @@ public class Options {
 	protected void initializeOptions(String[] args) {
 	  if (args == null) return;
 	  
+	  // fallback to env vars
+	  if (args.length == 0) {
+		 String envOptions = System.getenv().get("STOKES_DRIFT_OPTS");
+		 if (envOptions != null) {
+			 args = envOptions.split(" ");
+		 }
+	  }
+	  
 	  String optionKey = null;
 	  for(String arg: args) {
 		String key = null;

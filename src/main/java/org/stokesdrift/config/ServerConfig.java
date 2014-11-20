@@ -2,6 +2,7 @@ package org.stokesdrift.config;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,9 @@ public class ServerConfig {
 	public void load() throws Exception {
 		rootPath = options.getValue(Options.Key.ROOT_PATH);
 		String configFile = options.getValue(Options.Key.CONFIG_FILE);
+		if (rootPath == null) {
+			rootPath = Paths.get("").toAbsolutePath().toString();
+		}
 		StringBuilder fileName = new StringBuilder(rootPath).append(File.separator).append(configFile);
 		File file = new File(fileName.toString());
 		FileInputStream fis = new FileInputStream(file);
