@@ -13,9 +13,8 @@ public interface Application {
 
 	/**
 	 * Get the deployment information for the type of app based on the server configuration
-	 * 
-	 * @param config
-	 * @return
+
+	 * @return deploymentInfo Deployment information for setting up undertow
 	 */
 	DeploymentInfo getDeploymentInfo();
 	

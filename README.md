@@ -23,6 +23,7 @@ Neccessary evils:
 * Registry
 * Logging
 * IOC injection / CDI support, build objects / services based on this
+* Console screen that can be activated via config (servlet to run ruby code / etc...)
 
 
 

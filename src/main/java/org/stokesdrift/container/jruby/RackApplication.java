@@ -1,22 +1,20 @@
 package org.stokesdrift.container.jruby;
 
-import java.io.File;
-import java.io.FileInputStream;
-
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ListenerInfo;
 
+import java.io.File;
+import java.io.FileInputStream;
+
 import javax.inject.Named;
 import javax.servlet.DispatcherType;
 
 import org.jruby.rack.RackFilter;
-import org.jruby.rack.RackServletContextListener;
 import org.jruby.rack.util.IOHelpers;
 import org.stokesdrift.config.ApplicationConfig;
 import org.stokesdrift.container.Application;
-import org.xnio.IoUtils;
 
 /**
  * Sets up the configuration for a rack application 
@@ -45,7 +43,10 @@ public class RackApplication implements Application {
 	@Override
 	public DeploymentInfo getDeploymentInfo() {
 		FilterInfo filter = Servlets.filter(RACK_FILTER, RackFilter.class);
-		ListenerInfo listenerInfo = Servlets.listener(RackServletContextListener.class);
+		// TODO extend listener and setup the jruby env based on reloaded gems and jars
+		// Override appfactory?
+		
+		ListenerInfo listenerInfo = Servlets.listener(ServletContextListener.class);
 		
 		DeploymentInfo di = new DeploymentInfo()
 				.addListener(listenerInfo)				
@@ -78,7 +79,23 @@ public class RackApplication implements Application {
 		  File file = new File(config.getRootPath() + File.separator + config.getAppFile());
 		  FileInputStream fis = new FileInputStream(file);
 		  String script = IOHelpers.inputStreamToString(fis);
-		  script = "$:.unshift('"+config.getRootPath()+"/app')\n" + script;
+		  
+		  StringBuilder withHeader = new StringBuilder();
+		  withHeader.append("$:.unshift('").append(config.getRootPath()).append("/app')\n");
+		  String libDir = System.getProperty("STOKESDRIFT_LIB_DIR");
+		  if (libDir != null) {
+			  // TODO load from resources eg stokes_drift/header
+			  // TODO add to jruby kernel some how
+			  
+			  withHeader.append("jar_lib_dir = Dir[File.join(ENV['STOKESDRIFT_LIB_DIR'], '*.jar')]\n");
+			  withHeader.append("jar_lib_dir.each do |f|\n");
+			  withHeader.append(" next if f =~ /jruby-complete.+/\n");
+			  withHeader.append(" $CLASSPATH << f \n");
+			  withHeader.append(" require f \n");
+			  withHeader.append("end \n");	
+		  }
+		  withHeader.append(script);
+		  script = withHeader.toString();
 		  return script;
 		} catch (Exception e) {
 			e.printStackTrace();

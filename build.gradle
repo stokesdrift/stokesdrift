@@ -27,7 +27,7 @@ dependencies {
   compile "io.undertow:undertow-servlet:1.0.1.Final"
   compile "org.quartz-scheduler:quartz:2.2.1"
   compile "org.jboss.weld.se:weld-se-core:2.2.4.Final"
-  compile "org.jruby.rack:jruby-rack:1.1.14"
+  compile "org.jruby.rack:jruby-rack:1.1.17"
 
   testCompile 'junit:junit:4.11'
 
