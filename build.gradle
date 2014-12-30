@@ -8,12 +8,21 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'application'
 
-dependencies {
-  compile 'javax.enterprise:cdi-api:1.1'
+configurations {
+  compile {
+    transitive = true
+  }
 
+  runtime {
+    extendsFrom compile
+  }
+}
+
+dependencies {
+  compile "org.jruby:jruby-complete:1.7.13"
+  compile 'javax.enterprise:cdi-api:1.1'
   // compile "com.zaxxer:HikariCP:1.3.8"
   compile "org.yaml:snakeyaml:1.14"
-  compile "org.jruby:jruby-complete:1.7.13"
   compile "io.undertow:undertow-core:1.0.1.Final"
   compile "io.undertow:undertow-servlet:1.0.1.Final"
   compile "org.quartz-scheduler:quartz:2.2.1"
@@ -36,7 +45,7 @@ mainClassName = 'org.stokesdrift.Server'
 
 loadProperties("${System.getProperty('user.home')}/gradle.properties")
 
-defaultTasks = ['assemble']
+defaultTasks = ['assemble', 'copyDependsLibs']
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
@@ -52,7 +61,7 @@ repositories {
 
 sourceSets {
   main {
-    compileClasspath = compileClasspath
+    // compileClasspath = runtimeClasspath
     resources.srcDirs = ['src/main/ruby', 'src/main/resources']
   }
 }
@@ -94,6 +103,13 @@ def loadProperties(String sourceFileName) {
     for (Map.Entry property in config) {
       project.ext[property.key] = property.value;
     }
+  }
+}
+
+task copyDependsLibs(type: Copy) {
+  destinationDir = new File('build')
+  into('libs') {
+    from configurations.runtime
   }
 }
 

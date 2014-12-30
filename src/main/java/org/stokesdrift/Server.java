@@ -65,7 +65,7 @@ public class Server {
 		ServerConfig serverConfig = new ServerConfig(options);		
 		try {
 			serverConfig.load();
-			logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete]");
+			logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete, root="+serverConfig.getRootPath() + "]");
 		} catch(Throwable t) {
 			logger.log(Level.SEVERE, "stokesdrift:server:load_configuration[status=failed]", t);
 			serverConfig = null;
@@ -89,6 +89,7 @@ public class Server {
 			Application app = appBuilder.addConfig(appConfig).build();
 			// TODO add some debugging if app isn't able to be setup
 			if (app != null) {
+				logger.log(Level.INFO, "stokesdrift:server:loaded_app_definition[app="+appConfig.getName()+", type="+ appConfig.getType() +"]");
 				apps.add(app);
 			}
 		}

@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.bindir = 'bin'
   spec.executables << 'stokesdrift'
 
-  #spec.add_dependency 'json'
+  spec.add_dependency 'rack'
   #spec.add_dependency 'thread_safe', '~> 0.1'
 
   spec.add_development_dependency 'bundler', '~> 1.6'
