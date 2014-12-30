@@ -82,19 +82,10 @@ public class RackApplication implements Application {
 		  
 		  StringBuilder withHeader = new StringBuilder();
 		  withHeader.append("$:.unshift('").append(config.getRootPath()).append("/app')\n");
-		  String libDir = System.getProperty("STOKESDRIFT_LIB_DIR");
+		  String libDir = System.getProperty("STOKESDRIFT_LIB_DIR"); 
 		  if (libDir != null) {
-			  // TODO load from resources eg stokes_drift/header
-			  // TODO add to jruby kernel some how
-			  
-			  withHeader.append("jar_lib_dir = Dir[File.join(ENV['STOKESDRIFT_LIB_DIR'], '*.jar')]\n");
-			  withHeader.append("jar_lib_dir.each do |f|\n");
-			  withHeader.append(" next if f =~ /jruby-complete.+/\n");
-			  withHeader.append(" $CLASSPATH << f \n");
-			  withHeader.append(" require f \n");
-			  withHeader.append("end \n");	
+				
 		  }
-		  withHeader.append(script);
 		  script = withHeader.toString();
 		  return script;
 		} catch (Exception e) {

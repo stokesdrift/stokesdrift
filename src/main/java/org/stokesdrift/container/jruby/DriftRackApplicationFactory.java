@@ -1,16 +1,26 @@
 package org.stokesdrift.container.jruby;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jruby.Ruby;
-//import org.jruby.rack.ext.RackLibrary;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.DefaultRackApplicationFactory;
+import org.jruby.rack.DefaultRackConfig;
 import org.jruby.rack.RackContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class DriftRackApplicationFactory extends DefaultRackApplicationFactory implements RubyRuntimeManager {
 	
 	private RackContext rackServletContext;
+	private RubyInstanceConfig runtimeConfig;
 	
 	/**
 	 * Creates a new application instance (without initializing it). <br/>
@@ -22,36 +32,60 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 	public org.jruby.rack.RackApplication newApplication() {		
 		return new JrubyRackApplicationImpl(new ApplicationObjectFactory() {
 			public IRubyObject create(Ruby runtime) {
-				System.out.println("TRYING TO CREATE");
-				setLoadPaths(runtime);				
-				// return createApplicationObject(runtime);
-				return null;
+				return createApplicationObject(runtime);
 			}
 		}, this);
 	}
-	
-	protected void setLoadPaths(Ruby runtime) {
+
+	/**
+	 * Sets all the jar files as load paths
+	 * 
+	 * @param runtime
+	 */
+	protected void setLoadPaths(RubyInstanceConfig config) {
 	   String libDir = System.getProperty("STOKESDRIFT_LIB_DIR");
-	   System.out.println(" WHAT ARE WE DOING " + libDir);
 	   if (libDir != null) {
-		  // TODO load from resources eg stokes_drift/header
-		  // TODO add to jruby kernel some how
-		  
-		   
 		  File dir = new File(libDir);
 		  String[] fileList = dir.list();
+		  List<String> loadPaths = new ArrayList<String>();
 		  for(String fileName : fileList) {
-			  System.out.println("Setting up file: " + fileName);
+			  StringBuilder sb = new StringBuilder(libDir).append(File.separatorChar).append(fileName);
+			  loadPaths.add(sb.toString());
+			  // addJarToClasspath(sb.toString());
 		  }
-//		  withHeader.append("jar_lib_dir = Dir[File.join(ENV['STOKESDRIFT_LIB_DIR'], '*.jar')]\n");
-//		  withHeader.append("jar_lib_dir.each do |f|\n");
-//		  withHeader.append(" next if f =~ /jruby-complete.+/\n");
-//		  withHeader.append(" $CLASSPATH << f \n");
-//		  withHeader.append(" require f \n");
-//		  withHeader.append("end \n");	
+		  config.setLoadPaths(loadPaths);
 	   }
 	}
 	
+	
+	
+	private static final Class<?>[] parameters = new Class[]{URL.class};
+	private Method systemAddJar = null;
+	
+	/** 
+	 * Sets up the class path
+	 * @param fileName
+	 * @throws IOException
+	 */
+    public void addJarToClasspath(String fileName) { //throws IOException {
+    	File f = new File(fileName);
+    	URLClassLoader sysloader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    	// URLClassLoader sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
+    	try {
+    		if (systemAddJar == null) {
+    			Class<?> sysclass = URLClassLoader.class;
+    			systemAddJar = sysclass.getDeclaredMethod("addURL",parameters);
+    			systemAddJar.setAccessible(true);
+    		}
+    		systemAddJar.invoke(sysloader,new Object[]{ f.toURI().toURL() });
+    	 } catch (Throwable t) {
+    		 System.out.println("STUFF ");
+    		 t.printStackTrace();
+             // throw new IOException("Error, could not add URL to system classloader");
+         }                
+    }
+
+    
     /**
      * Initialize this factory using the given context.
      * <br/>
@@ -60,15 +94,67 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
      */
     @Override
     public void init(final RackContext rackContext) {
-       System.out.println("INITIING STUFF ");
-       rackServletContext = rackContext;
+       this.rackServletContext = rackContext;
        super.init(rackContext);
-       
+       this.runtimeConfig = createRuntimeConfig();       
     }
     
-//    protected void loadJRubyRack(final Ruby runtime) {
-//        RackLibrary.load(runtime);
-//    }
+    
+    // TODO contribute back on integration points for the Jruby Rack project
+    @Override
+    public Ruby newRuntime() throws RaiseException {
+    	setLoadPaths(runtimeConfig);
+        final Ruby runtime = Ruby.newInstance(runtimeConfig);
+        initRuntime(runtime);
+        return runtime;
+    }
+    
+    /**
+     * TODO contribute back hooks for integration purposes
+     * Initializes the runtime (exports the context, boots the Rack handler).
+     *
+     * NOTE: (package) visible due specs
+     *
+     * @param runtime
+     */
+    protected void initRuntime(final Ruby runtime) {
+        // set $servlet_context :
+        runtime.getGlobalVariables().set(
+            "$servlet_context", JavaUtil.convertJavaToRuby(runtime, rackServletContext)
+        );
+        // load our (servlet) Rack handler :
+        runtime.evalScriptlet("require 'rack/handler/servlet'");
+
+        // NOTE: this is experimental stuff and might change in the future :
+        String env = rackServletContext.getConfig().getProperty("jruby.rack.handler.env");
+        // currently supported "env" values are 'default' and 'servlet'
+        if ( env != null ) {
+            runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
+        }
+        String response = rackServletContext.getConfig().getProperty("jruby.rack.handler.response");
+        if ( response == null ) {
+            response = rackServletContext.getConfig().getProperty("jruby.rack.response");
+        }
+        if ( response != null ) { // JRuby::Rack::JettyResponse -> 'jruby/rack/jetty_response'
+            runtime.evalScriptlet("Rack::Handler::Servlet.response = '" + response + "'");
+        }
+
+        // configure (Ruby) bits and pieces :
+        String dechunk = rackServletContext.getConfig().getProperty("jruby.rack.response.dechunk");
+        Boolean dechunkFlag = (Boolean) DefaultRackConfig.toStrictBoolean(dechunk, null);
+        if ( dechunkFlag != null ) {
+            runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunkFlag + "");
+        }
+        else { // dechunk null (default) or not a true/false value ... we're patch :
+            runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
+            // `require 'jruby/rack/chunked'` that happens after Rack is loaded
+        }
+        String swallowAbort = rackServletContext.getConfig().getProperty("jruby.rack.response.swallow_client_abort");
+        Boolean swallowAbortFlag = (Boolean) DefaultRackConfig.toStrictBoolean(swallowAbort, null);
+        if ( swallowAbortFlag != null ) {
+            runtime.evalScriptlet("JRuby::Rack::Response.swallow_client_abort = " + swallowAbortFlag + "");
+        }
+    }
     
     public RackContext getContext()
     {
