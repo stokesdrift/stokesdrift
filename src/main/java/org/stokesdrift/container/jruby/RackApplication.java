@@ -86,6 +86,7 @@ public class RackApplication implements Application {
 		  if (libDir != null) {
 				
 		  }
+		  withHeader.append(script);
 		  script = withHeader.toString();
 		  return script;
 		} catch (Exception e) {

@@ -34,16 +34,13 @@ public class ServletContextListener extends RackServletContextListener {
 			// TODO debug factory.getDelegate().init(context)
 			factory.init(context);
 		} catch (Exception e) {
-			System.out.println("exception in initialize ? " + e.getMessage());
-			e.printStackTrace();
-
 			handleInitializationException(e, factory, context);
 		}
 	}
 
 	@Override
 	protected RackApplicationFactory newApplicationFactory(RackConfig config) {
-		final RackApplicationFactory factory = new DriftRackApplicationFactory();		
+		final RackApplicationFactory factory = new DriftRackApplicationFactory();
 		final Integer maxRuntimes = config.getMaximumRuntimes();
 		// for backwards compatibility when runtime mix/max values not specified
 		// we assume a single shared (threadsafe) runtime to be used :

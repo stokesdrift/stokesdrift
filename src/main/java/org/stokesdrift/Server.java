@@ -24,9 +24,9 @@ import org.stokesdrift.web.listeners.CdiServletRequestListener;
 /**
  * Main starting point of loading the container and populating the registry for
  * the micro services to interact with each other
- * 
+ *
  * @author driedtoast
- * 
+ *
  */
 public class Server {
 
@@ -36,7 +36,7 @@ public class Server {
 	private List<Application> applications;
 	private Undertow server;
 	private Weld weld;
-	private WeldContainer container; 
+	private WeldContainer container;
 
 	public static void main(String[] args) {
 		Server server = new Server(args);
@@ -60,20 +60,20 @@ public class Server {
 	public ServerConfig createConfig(Options options) {
 		logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=in_progress]");
 		System.setProperty("org.jboss.weld.se.archive.isolation", "false");
-		ServerConfig serverConfig = new ServerConfig(options);		
+		ServerConfig serverConfig = new ServerConfig(options);
 		try {
 			serverConfig.load();
 			logger.log(Level.INFO, "stokesdrift:server:load_configuration[status=complete, root="+serverConfig.getRootPath() + "]");
 		} catch(Throwable t) {
 			logger.log(Level.SEVERE, "stokesdrift:server:load_configuration[status=failed]", t);
 			serverConfig = null;
-		}		
+		}
 		return serverConfig;
 	}
 
 	/**
 	 * Loads up the application configuration for an application
-	 * 
+	 *
 	 * @param config
 	 * @return list of applications
 	 */
@@ -97,7 +97,7 @@ public class Server {
 
 	/**
 	 * Setup the deployment managers for a given set of applications
-	 * 
+	 *
 	 * @param apps
 	 * @return list of deployment managers
 	 */
@@ -105,11 +105,11 @@ public class Server {
 		List<DeploymentManager> deployManagers = new ArrayList<DeploymentManager>();
 		for (Application app : apps) {
 			DeploymentInfo deployInfo = app.getDeploymentInfo();
-			
+
 			// Add default listeners
 			ListenerInfo cdiListener = Servlets.listener(CdiServletRequestListener.class);
 			deployInfo.addListener(cdiListener);
-			
+
 			DeploymentManager deploymentManager = Servlets.defaultContainer().addDeployment(deployInfo);
 			try {
 				deploymentManager.deploy();
@@ -138,6 +138,7 @@ public class Server {
 		}
 		server = builder.build();
 		server.start();
+		logger.log(Level.INFO, "stokesdrift:server:http[port="+config.getPort()+",host="+config.getHost()+"]");
 		logger.log(Level.INFO, "stokesdrift:server:start[status=complete]");
 	}
 

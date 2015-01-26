@@ -1,10 +1,6 @@
 package org.stokesdrift.container.jruby;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,18 +14,18 @@ import org.jruby.rack.RackContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class DriftRackApplicationFactory extends DefaultRackApplicationFactory implements RubyRuntimeManager {
-	
+
 	private RackContext rackServletContext;
 	private RubyInstanceConfig runtimeConfig;
-	
+
 	/**
 	 * Creates a new application instance (without initializing it). <br/>
 	 * NOTE: exception handling is left to the outer factory.
-	 * 
+	 *
 	 * @return new application instance
 	 */
 	@Override
-	public org.jruby.rack.RackApplication newApplication() {		
+	public org.jruby.rack.RackApplication newApplication() {
 		return new JrubyRackApplicationImpl(new ApplicationObjectFactory() {
 			public IRubyObject create(Ruby runtime) {
 				return createApplicationObject(runtime);
@@ -39,8 +35,8 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 
 	/**
 	 * Sets all the jar files as load paths
-	 * 
-	 * @param runtime
+	 *
+	 * @param config
 	 */
 	protected void setLoadPaths(RubyInstanceConfig config) {
 	   String libDir = System.getProperty("STOKESDRIFT_LIB_DIR");
@@ -51,41 +47,14 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 		  for(String fileName : fileList) {
 			  StringBuilder sb = new StringBuilder(libDir).append(File.separatorChar).append(fileName);
 			  loadPaths.add(sb.toString());
-			  // addJarToClasspath(sb.toString());
 		  }
 		  config.setLoadPaths(loadPaths);
+		  config.setRunRubyInProcess(true);
+		  config.setDebug(true);
+		  config.setLoader(ClassLoader.getSystemClassLoader());
 	   }
 	}
-	
-	
-	
-	private static final Class<?>[] parameters = new Class[]{URL.class};
-	private Method systemAddJar = null;
-	
-	/** 
-	 * Sets up the class path
-	 * @param fileName
-	 * @throws IOException
-	 */
-    public void addJarToClasspath(String fileName) { //throws IOException {
-    	File f = new File(fileName);
-    	URLClassLoader sysloader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
-    	// URLClassLoader sysloader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-    	try {
-    		if (systemAddJar == null) {
-    			Class<?> sysclass = URLClassLoader.class;
-    			systemAddJar = sysclass.getDeclaredMethod("addURL",parameters);
-    			systemAddJar.setAccessible(true);
-    		}
-    		systemAddJar.invoke(sysloader,new Object[]{ f.toURI().toURL() });
-    	 } catch (Throwable t) {
-    		 System.out.println("STUFF ");
-    		 t.printStackTrace();
-             // throw new IOException("Error, could not add URL to system classloader");
-         }                
-    }
 
-    
     /**
      * Initialize this factory using the given context.
      * <br/>
@@ -96,19 +65,22 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
     public void init(final RackContext rackContext) {
        this.rackServletContext = rackContext;
        super.init(rackContext);
-       this.runtimeConfig = createRuntimeConfig();       
+       this.runtimeConfig = createRuntimeConfig();
     }
-    
-    
+
+
     // TODO contribute back on integration points for the Jruby Rack project
     @Override
     public Ruby newRuntime() throws RaiseException {
     	setLoadPaths(runtimeConfig);
-        final Ruby runtime = Ruby.newInstance(runtimeConfig);
-        initRuntime(runtime);
+    	Ruby runtime = Ruby.getThreadLocalRuntime();
+    	if (runtime == null) {
+    	  runtime = Ruby.newInstance(runtimeConfig);
+    	}
+    	initDriftRuntime(runtime);
         return runtime;
     }
-    
+
     /**
      * TODO contribute back hooks for integration purposes
      * Initializes the runtime (exports the context, boots the Rack handler).
@@ -117,7 +89,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
      *
      * @param runtime
      */
-    protected void initRuntime(final Ruby runtime) {
+    protected void initDriftRuntime(final Ruby runtime) {
         // set $servlet_context :
         runtime.getGlobalVariables().set(
             "$servlet_context", JavaUtil.convertJavaToRuby(runtime, rackServletContext)
@@ -155,7 +127,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
             runtime.evalScriptlet("JRuby::Rack::Response.swallow_client_abort = " + swallowAbortFlag + "");
         }
     }
-    
+
     public RackContext getContext()
     {
     	return rackServletContext;

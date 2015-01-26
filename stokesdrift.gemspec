@@ -9,8 +9,9 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/stokesdrift/stokesdrift"
   spec.license       = "MIT"
 
+  # spec.files         = `git ls-files`.split($/)
 
-  spec.files += Dir['build/libs/**/*']
+  spec.files += Dir['build/libs/**/*', 'scripts/**']
   spec.bindir = 'bin'
   spec.executables << 'stokesdrift'
 
