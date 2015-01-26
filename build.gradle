@@ -45,7 +45,7 @@ mainClassName = 'org.stokesdrift.Server'
 
 loadProperties("${System.getProperty('user.home')}/gradle.properties")
 
-defaultTasks = ['assemble', 'copyDependsLibs']
+defaultTasks = ['cleanLibs','assemble', 'copyDependsLibs']
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
@@ -106,11 +106,14 @@ def loadProperties(String sourceFileName) {
   }
 }
 
+task cleanLibs << {
+  new File('libs').delete()
+}
+
 task copyDependsLibs(type: Copy) {
-  destinationDir = new File('build')
-  into('libs') {
-    from configurations.runtime
-  }
+  destinationDir = new File('lib')
+  from "build/libs"
+  from "src/main/ruby"
 }
 
 uploadArchives {

@@ -1,7 +1,7 @@
 # coding: utf-8
 Gem::Specification.new do |spec|
   spec.name          = "stokes-drift"
-  spec.version       = "0.1"
+  spec.version       = "0.1.0"
   spec.authors       = ["Daniel Marchant"]
   spec.email         = ["dan@driedtoast.com"]
   spec.summary       = %q{Stokes Drift}
@@ -11,9 +11,11 @@ Gem::Specification.new do |spec|
 
   # spec.files         = `git ls-files`.split($/)
 
-  spec.files += Dir['build/libs/**/*', 'scripts/**']
+  spec.files += Dir['lib/**/*', 'scripts/**']
   spec.bindir = 'bin'
   spec.executables << 'stokesdrift'
+
+  # spec.require_paths = Dir['lib']
 
   spec.add_dependency 'rack'
   #spec.add_dependency 'thread_safe', '~> 0.1'

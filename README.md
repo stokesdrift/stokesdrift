@@ -3,6 +3,11 @@
 
 Coming soon, under construction, all that sort of jazz
 
+To build:
+* `gradle`
+* `gem build stokesdrift.gemspec`
+
+
 ## Target feature set ##
 
 * Ability to create services that have a start / stop runtime
