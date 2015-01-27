@@ -45,7 +45,7 @@ mainClassName = 'org.stokesdrift.Server'
 
 loadProperties("${System.getProperty('user.home')}/gradle.properties")
 
-defaultTasks = ['cleanLibs','assemble', 'copyDependsLibs']
+defaultTasks = ['cleanLibs','assemble', 'copyDependsLibs', 'copyRequireFile']
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
@@ -107,12 +107,22 @@ def loadProperties(String sourceFileName) {
 }
 
 task cleanLibs << {
-  new File('libs').delete()
+  new File('lib').delete()
+}
+
+import org.apache.tools.ant.filters.*
+
+task copyRequireFile(type: Copy) {
+  destinationDir = new File('lib')
+  from "src/main/ruby"
+  include 'stokes_drift.rb'
+  filter(ConcatFilter, prepend: file('src/include/header.txt'))
 }
 
 task copyDependsLibs(type: Copy) {
   destinationDir = new File('lib')
   from "build/libs"
+  from configurations.runtime
   from "src/main/ruby"
 }
 
