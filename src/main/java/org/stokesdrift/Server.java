@@ -19,6 +19,7 @@ import org.stokesdrift.config.ServerConfig;
 import org.stokesdrift.container.Application;
 import org.stokesdrift.container.ApplicationBuilder;
 import org.stokesdrift.container.ApplicationBuilderFactory;
+import org.stokesdrift.registry.Registry;
 import org.stokesdrift.web.listeners.CdiServletRequestListener;
 
 /**

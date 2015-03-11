@@ -8,6 +8,11 @@ To build:
 * `gem build stokesdrift.gemspec`
 
 
+To publish:
+* `gradle uploadArchives`
+* `gem push stokes-drift*.gem`
+
+
 ## Target feature set ##
 
 * Ability to create services that have a start / stop runtime

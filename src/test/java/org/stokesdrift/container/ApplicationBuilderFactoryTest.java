@@ -12,6 +12,7 @@ import javax.enterprise.inject.spi.Bean;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.jboss.weld.literal.InitializedLiteral;
+import org.jboss.weld.literal.NamedLiteral;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -69,6 +70,8 @@ public class ApplicationBuilderFactoryTest {
 		ApplicationBuilder builder = container.instance().select(ApplicationBuilder.class).get();
 		Assert.assertNotNull(builder);
 
+		Assert.assertNotNull(container.instance().select(new NamedLiteral("rack_builder") ).get());
+		
 		Set<Bean<?>> builders = container.getBeanManager().getBeans("rack_builder");
 		Iterator<Bean<?>> iter = builders.iterator();
 		List<Class<?>> names = new ArrayList<Class<?>>();

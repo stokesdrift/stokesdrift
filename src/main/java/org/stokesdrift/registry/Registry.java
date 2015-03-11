@@ -1,9 +1,16 @@
 package org.stokesdrift.registry;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.enterprise.inject.spi.Bean;
+
+import org.jboss.weld.Container;
+import org.jboss.weld.literal.NamedLiteral;
+import org.stokesdrift.config.RuntimeType;
 
 
 // TODO implements javax.naming.Context
@@ -33,8 +40,30 @@ public class Registry implements Map<String, RegistryObject> {
 	}
 
 	@Override
-	public RegistryObject get(Object key) {
-		return registryMap.get(key);
+	public RegistryObject get(Object key) {		
+		RegistryObject localReference = registryMap.get(key);
+		if(localReference == null) {			
+			Container container = Container.instance();
+			Iterator<Bean<?>> iterBeans = container.deploymentManager().getBeans().iterator();
+			while(iterBeans.hasNext()) {
+				Bean<?> bean = iterBeans.next();
+				System.out.println(" NAME IS " + bean.getName());
+			}
+			
+			Iterator<Object> iter = container.deploymentManager().instance().iterator();
+			while(iter.hasNext()) {
+				System.out.println(iter.next());
+			}
+			
+			try {
+			   Object obj = container.deploymentManager().instance().select(new NamedLiteral(key.toString()) ).get();
+			   localReference = new RegistryObject(RuntimeType.CDI, obj);
+			   put(key.toString(), localReference);			   
+			} catch(Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		return localReference;
 	}
 
 	@Override
@@ -72,5 +101,4 @@ public class Registry implements Map<String, RegistryObject> {
 		return registryMap.entrySet();
 	}
 	
-
 }
