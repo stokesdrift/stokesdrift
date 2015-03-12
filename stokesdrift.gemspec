@@ -1,7 +1,7 @@
 # coding: utf-8
 Gem::Specification.new do |spec|
   spec.name          = "stokesdrift"
-  spec.version       = "0.1.2"
+  spec.version       = "0.1.3"
   spec.authors       = ["Daniel Marchant"]
   spec.email         = ["dan@driedtoast.com"]
   spec.summary       = %q{Stokes Drift}
