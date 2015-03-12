@@ -48,6 +48,24 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 			  StringBuilder sb = new StringBuilder(libDir).append(File.separatorChar).append(fileName);
 			  loadPaths.add(sb.toString());
 		  }
+		  
+		 // Add root gems eg: /opt/jruby/lib/ruby/gems/shared/gems/
+		 String jrubyRootDir = System.getProperty("JRUBY_HOME");
+		 if (jrubyRootDir != null) {
+			StringBuilder gemPath = new StringBuilder();
+			gemPath.append(jrubyRootDir);
+			String[] paths = new String[] { "lib", "jruby", "gems", "shared", "gems" };
+			for (String path : paths) {
+				gemPath.append(File.separator).append(path);
+			}
+			File gemPathDir = new File(gemPath.toString());
+			if (gemPathDir.exists()) {
+				File[] gemPaths = gemPathDir.listFiles();
+				for(File path: gemPaths) {
+					loadPaths.add(path.getAbsolutePath());
+				}
+			}			
+		 }
 		  config.setLoadPaths(loadPaths);
 		  config.setRunRubyInProcess(true);
 		  config.setDebug(true);

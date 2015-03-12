@@ -83,17 +83,6 @@ public class RackApplication implements Application {
 		} else {
 			gemPath = new StringBuilder();
 		}
-		
-		// Add root gems eg: /opt/jruby/lib/ruby/gems/shared/gems/
-		String jrubyRootDir = System.getProperty("JRUBY_HOME");
-		if (jrubyRootDir != null) {
-			gemPath.append(jrubyRootDir);
-			String[] paths = new String[] { "lib", "jruby", "gems", "shared", "gems" };
-			for (String path : paths) {
-				gemPath.append(File.separator).append(path);
-			}
-		}
-		
 		deployInfo.addInitParameter("gem.path", gemPath.toString());
 		deployInfo.addInitParameter("jruby.rack.layout_class", "RailsFilesystemLayout");
 		deployInfo.addInitParameter("jruby.rack.logging.name", "jul");
