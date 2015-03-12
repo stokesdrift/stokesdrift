@@ -1,6 +1,6 @@
 require 'java'
 
-module StokesDrift
+module Stokesdrift
   class Server
 
     def initialize(args)
