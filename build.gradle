@@ -115,7 +115,7 @@ import org.apache.tools.ant.filters.*
 task copyRequireFile(type: Copy) {
   destinationDir = new File('lib')
   from "src/main/ruby"
-  include 'stokes_drift.rb'
+  include 'stokesdrift.rb'
   filter(ConcatFilter, prepend: file('src/include/header.txt'))
 }
 

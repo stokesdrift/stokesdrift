@@ -39,17 +39,14 @@ Dependencies:
 
 TODO
 * Fix the test resource pathing via gradle build
-* Rename packages to stokesdrift vs stokes_drift
 * Startup and including of the resources inclusion
-* Fix issue with running in a gem
-** Publish gem after
-* Add service approach
+* Add version file for all references to lib version
+* Add service approach - use samza for queue consumption ?
 * Add configuration options
 ** java fork of confd
 * Add plugin model based on CDI
 * Add logging and gelf support
 * Add newrelic support
-
 
 
 ## Testing out ##

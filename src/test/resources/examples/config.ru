@@ -1,9 +1,9 @@
-require 'stokes_drift'
+require 'stokesdrift'
 
 class ExampleRack
   def initialize
     puts " Creating example app "
-    registry = StokesDrift::Registry.find
+    registry = Stokesdrift::Registry.find
     registry.put("test", "key")
     puts "KEY IS #{registry.get("test")}"
 
