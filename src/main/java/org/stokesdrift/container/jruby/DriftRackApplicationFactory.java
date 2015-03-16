@@ -66,10 +66,14 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 				}
 			}			
 		 }
-		  config.setLoadPaths(loadPaths);
-		  config.setRunRubyInProcess(true);
-		  config.setDebug(true);
-		  config.setLoader(ClassLoader.getSystemClassLoader());
+		 String gemPathEnv =  System.getProperty("GEM_PATH");
+		 if (gemPathEnv != null) {
+			loadPaths.add(gemPathEnv);
+		 }	 
+		 config.setLoadPaths(loadPaths);
+		 config.setRunRubyInProcess(true);
+		 config.setDebug(true);
+		 config.setLoader(ClassLoader.getSystemClassLoader());
 	   }
 	}
 

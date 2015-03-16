@@ -83,6 +83,10 @@ public class RackApplication implements Application {
 		} else {
 			gemPath = new StringBuilder();
 		}
+		String gemPathEnv = System.getProperty("GEM_PATH");
+		if (gemPathEnv != null) {
+			gemPath.append(gemPathEnv);
+		}
 		deployInfo.addInitParameter("gem.path", gemPath.toString());
 		deployInfo.addInitParameter("jruby.rack.layout_class", "RailsFilesystemLayout");
 		deployInfo.addInitParameter("jruby.rack.logging.name", "jul");

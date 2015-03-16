@@ -2,12 +2,16 @@
 
 if [ -z "$JRUBY_HOME" ]; then
   echo "NO JRUBY_HOME SET"
-  exit 0
+  JRUBY_EXEC=`which jruby`
+  JRUBY_BIN=`dirname $JRUBY_EXEC`
+  export JRUBY_HOME="${JRUBY_HOME}/.."
+  echo "Setting JRUBY_HOME to ${JRUBY_HOME}"
 fi
 
 if [ -z "$APP_ROOT"]; then
   echo "NO APP_ROOT SET"
-  exit 0
+  export APP_ROOT=`pwd`
+  echo "Setting APP_ROOT to ${APP_ROOT}"
 fi
 
 export PATH=$JRUBY_HOME/bin:$PATH
@@ -19,7 +23,6 @@ fi
 
 export JAVA_OPTS="${JAVA_OPTS} -XX:+TieredCompilation"
 export JAVA_OPTS="${JAVA_OPTS} -XX:+UseCodeCacheFlushing"
-# export JAVA_OPTS="${JAVA_OPTS} -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime"
 export JAVA_OPTS="${JAVA_OPTS} -Djruby.thread.pooling=true"
 export JAVA_OPTS="${JAVA_OPTS} -Djruby.compile.positionless=true"
 export JAVA_OPTS="${JAVA_OPTS} -Djruby.compile.mode=FORCE"
@@ -34,6 +37,7 @@ SCRIPT_DIR=$( dirname "${BASH_SOURCE[0]}" )
 echo "Running Stokesdrift from: ${SCRIPT_DIR}/../"
 echo "Stokes drift home: ${STOKESDRIFT_DIR}"
 echo "Stokes drift lib: ${STOKESDRIFT_LIB_DIR}"
+echo "Gem path environment: ${GEM_PATH}"
 
 if [ -z "$STOKESDRIFT_DIR" ]; then
   export STOKESDRIFT_DIR=$( cd "${SCRIPT_DIR}/../" && pwd )
