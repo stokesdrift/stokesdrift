@@ -7,6 +7,8 @@ import io.undertow.servlet.api.ListenerInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Named;
 import javax.servlet.DispatcherType;
@@ -48,7 +50,8 @@ public class RackApplication implements Application {
 	private static final String RACK_FILTER = "RackFilter";
 
 	private ApplicationConfig config;
-
+	private static final Logger logger = Logger.getLogger(RackApplication.class.getName());
+	
 	@Override
 	public DeploymentInfo getDeploymentInfo() {
 		FilterInfo filter = Servlets.filter(RACK_FILTER, RackFilter.class);
@@ -100,15 +103,11 @@ public class RackApplication implements Application {
 
 			StringBuilder withHeader = new StringBuilder();
 			withHeader.append("$:.unshift('").append(config.getRootPath()).append("/app')\n");
-			String libDir = System.getProperty("STOKESDRIFT_LIB_DIR");
-			if (libDir != null) {
-
-			}
 			withHeader.append(script);
 			script = withHeader.toString();
 			return script;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "rack script not found", e);
 			return null;
 		}
 	}
