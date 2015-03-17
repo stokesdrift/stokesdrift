@@ -39,7 +39,8 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 	 * @param config
 	 */
 	protected void setLoadPaths(RubyInstanceConfig config) {
-	   String libDir = System.getProperty("STOKESDRIFT_LIB_DIR");
+	   String libDir = getEnvVariable("STOKESDRIFT_LIB_DIR");
+
 	   if (libDir != null) {
 		  File dir = new File(libDir);
 		  String[] fileList = dir.list();
@@ -48,10 +49,10 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 			  StringBuilder sb = new StringBuilder(libDir).append(File.separatorChar).append(fileName);
 			  loadPaths.add(sb.toString());
 		  }
-		  
+
 		 // Add root gems eg: /opt/jruby/lib/ruby/gems/shared/gems/
-		 String jrubyRootDir = System.getProperty("JRUBY_HOME");
-		 if (jrubyRootDir != null) {
+		 String jrubyRootDir = getEnvVariable("JRUBY_HOME");
+         if (jrubyRootDir != null) {
 			StringBuilder gemPath = new StringBuilder();
 			gemPath.append(jrubyRootDir);
 			String[] paths = new String[] { "lib", "jruby", "gems", "shared", "gems" };
@@ -64,18 +65,30 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 				for(File path: gemPaths) {
 					loadPaths.add(path.getAbsolutePath());
 				}
-			}			
+			}
 		 }
-		 String gemPathEnv =  System.getProperty("GEM_PATH");
-		 if (gemPathEnv != null) {
+		 String gemPathEnv = getEnvVariable("GEM_PATH");
+         if (gemPathEnv != null) {
 			loadPaths.add(gemPathEnv);
-		 }	 
+		 }
 		 config.setLoadPaths(loadPaths);
 		 config.setRunRubyInProcess(true);
 		 config.setDebug(true);
 		 config.setLoader(ClassLoader.getSystemClassLoader());
 	   }
 	}
+
+   /**
+    * Returns eiterh a system property or an environment variable
+    *
+    */
+    public String getEnvVariable(String name) {
+      String envValue =  System.getProperty(name);
+      if (envValue == null) {
+         envValue =  System.getenv(name);
+      }
+      return envValue;
+    }
 
     /**
      * Initialize this factory using the given context.

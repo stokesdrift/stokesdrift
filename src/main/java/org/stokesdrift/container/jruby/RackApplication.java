@@ -51,6 +51,7 @@ public class RackApplication implements Application {
 
 	private ApplicationConfig config;
 	private static final Logger logger = Logger.getLogger(RackApplication.class.getName());
+	private String gemPathDirectory;
 	
 	@Override
 	public DeploymentInfo getDeploymentInfo() {
@@ -71,7 +72,6 @@ public class RackApplication implements Application {
 	protected void setupInitParams(DeploymentInfo deployInfo) {
 		deployInfo.addInitParameter("jruby.runtime.init.threads", "1");
 		deployInfo.addInitParameter("rackup", getRackupString());
-		deployInfo.addInitParameter("app.root", config.getRootPath());
 		deployInfo.addInitParameter("jruby.rack.debug.load", "true");
 		StringBuilder gemPath = new StringBuilder(config.getRootPath());
 		gemPath.append(File.separator);
@@ -86,13 +86,14 @@ public class RackApplication implements Application {
 		} else {
 			gemPath = new StringBuilder();
 		}
-		String gemPathEnv = System.getProperty("GEM_PATH");
-		if (gemPathEnv != null) {
-			gemPath.append(gemPathEnv);
+		gemPathDirectory = System.getenv("GEM_PATH");
+		if (gemPathDirectory != null) {			
+			gemPath.append(gemPathDirectory);
 		}
 		deployInfo.addInitParameter("gem.path", gemPath.toString());
 		deployInfo.addInitParameter("jruby.rack.layout_class", "RailsFilesystemLayout");
 		deployInfo.addInitParameter("jruby.rack.logging.name", "jul");
+		deployInfo.addInitParameter("app.root", config.getRootPath());
 	}
 
 	protected String getRackupString() {
@@ -102,6 +103,10 @@ public class RackApplication implements Application {
 			String script = IOHelpers.inputStreamToString(fis);
 
 			StringBuilder withHeader = new StringBuilder();
+			// withHeader.append("Gem.clear_paths\n");
+			//if (gemPathDirectory != null) {
+			//	withHeader.append("Gem.path.replace('").append(gemPathDirectory).append("')\n");
+			//}
 			withHeader.append("$:.unshift('").append(config.getRootPath()).append("/app')\n");
 			withHeader.append(script);
 			script = withHeader.toString();
