@@ -73,27 +73,23 @@ public class RackApplication implements Application {
 		deployInfo.addInitParameter("jruby.runtime.init.threads", "1");
 		deployInfo.addInitParameter("rackup", getRackupString());
 		deployInfo.addInitParameter("jruby.rack.debug.load", "true");
-		StringBuilder gemPath = new StringBuilder(config.getRootPath());
-		gemPath.append(File.separator);
-		gemPath.append("vendor").append(File.separator).append("jruby");
-
-		gemPath.append(File.separator).append("1.9"); // TODO needs to come from a config
-		gemPath.append(File.separator).append("gems"); // TODO need to figure out based on cache vs bundle
-		
-		File gemPathDir = new File(gemPath.toString());
-		if (gemPathDir.exists()) {
-			gemPath.append(File.pathSeparator);
-		} else {
-			gemPath = new StringBuilder();
-		}
-		gemPathDirectory = System.getenv("GEM_PATH");
-		if (gemPathDirectory != null) {			
-			gemPath.append(gemPathDirectory);
-		}
-		deployInfo.addInitParameter("gem.path", gemPath.toString());
 		deployInfo.addInitParameter("jruby.rack.layout_class", "RailsFilesystemLayout");
 		deployInfo.addInitParameter("jruby.rack.logging.name", "jul");
 		deployInfo.addInitParameter("app.root", config.getRootPath());
+		
+//		StringBuilder gemPath = new StringBuilder(config.getRootPath());
+//		gemPath.append(File.separator);
+//		gemPath.append("vendor").append(File.separator).append("jruby");
+//
+//		gemPath.append(File.separator).append("1.9"); // TODO needs to come from a config
+//		gemPath.append(File.separator).append("gems"); // TODO need to figure out based on cache vs bundle
+		
+		
+		// withHeader.append("Gem.clear_paths\n");
+		//if (gemPathDirectory != null) {
+		//	withHeader.append("Gem.path.replace('").append(gemPathDirectory).append("')\n");
+		//}
+		
 	}
 
 	protected String getRackupString() {
@@ -103,10 +99,6 @@ public class RackApplication implements Application {
 			String script = IOHelpers.inputStreamToString(fis);
 
 			StringBuilder withHeader = new StringBuilder();
-			// withHeader.append("Gem.clear_paths\n");
-			//if (gemPathDirectory != null) {
-			//	withHeader.append("Gem.path.replace('").append(gemPathDirectory).append("')\n");
-			//}
 			withHeader.append("$:.unshift('").append(config.getRootPath()).append("/app')\n");
 			withHeader.append(script);
 			script = withHeader.toString();

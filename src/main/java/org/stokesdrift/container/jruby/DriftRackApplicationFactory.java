@@ -3,6 +3,7 @@ package org.stokesdrift.container.jruby;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -10,7 +11,9 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.DefaultRackApplicationFactory;
 import org.jruby.rack.DefaultRackConfig;
+import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackContext;
+import org.jruby.rack.RackLogger;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class DriftRackApplicationFactory extends DefaultRackApplicationFactory implements RubyRuntimeManager {
@@ -33,6 +36,10 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 		}, this);
 	}
 
+	public RubyInstanceConfig getRuntimeConfig() {
+		return runtimeConfig;
+	}
+
 	/**
 	 * Sets all the jar files as load paths
 	 *
@@ -40,52 +47,73 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 	 */
 	protected void setLoadPaths(RubyInstanceConfig config) {
 	   String libDir = getEnvVariable("STOKESDRIFT_LIB_DIR");
+	   List<String> loadPaths = new ArrayList<String>();
 
 	   if (libDir != null) {
 		  File dir = new File(libDir);
 		  String[] fileList = dir.list();
-		  List<String> loadPaths = new ArrayList<String>();
+
 		  for(String fileName : fileList) {
 			  StringBuilder sb = new StringBuilder(libDir).append(File.separatorChar).append(fileName);
 			  loadPaths.add(sb.toString());
 		  }
-
-		 // Add root gems eg: /opt/jruby/lib/ruby/gems/shared/gems/
-		 String jrubyRootDir = getEnvVariable("JRUBY_HOME");
-         if (jrubyRootDir != null) {
-			StringBuilder gemPath = new StringBuilder();
-			gemPath.append(jrubyRootDir);
-			String[] paths = new String[] { "lib", "jruby", "gems", "shared", "gems" };
-			for (String path : paths) {
-				gemPath.append(File.separator).append(path);
-			}
-			File gemPathDir = new File(gemPath.toString());
-			if (gemPathDir.exists()) {
-				File[] gemPaths = gemPathDir.listFiles();
-				for(File path: gemPaths) {
-					loadPaths.add(path.getAbsolutePath());
-				}
-			}
-		 }
-		 String gemPathEnv = getEnvVariable("GEM_PATH");
-         if (gemPathEnv != null) {
-			loadPaths.add(gemPathEnv);
-		 }
-		 config.setLoadPaths(loadPaths);
-		 config.setRunRubyInProcess(true);
-		 config.setDebug(true);
-		 config.setLoader(ClassLoader.getSystemClassLoader());
 	   }
+  	   // Add root gems eg: /opt/jruby/lib/ruby/gems/shared/gems/
+	   String jrubyRootDir = getEnvVariable("JRUBY_HOME");
+       if (jrubyRootDir != null) {
+		  StringBuilder gemPath = new StringBuilder();
+		  gemPath.append(jrubyRootDir);
+		  String[] paths = new String[] { "lib", "jruby", "gems", "shared", "gems" };
+		  for (String path : paths) {
+			gemPath.append(File.separator).append(path);
+		  }
+		  File gemPathDir = new File(gemPath.toString());
+		  if (gemPathDir.exists()) {
+			File[] gemPaths = gemPathDir.listFiles();
+			for(File path: gemPaths) {
+				loadPaths.add(path.getAbsolutePath());
+			}
+		  }
+	   }
+	   String gemPathEnv = getEnvVariable("GEM_PATH");
+       if (gemPathEnv != null) {
+		 loadPaths.add(gemPathEnv);
+	   }
+	   config.setLoadPaths(loadPaths);
+	   config.setRunRubyInProcess(true);
+	   config.setDebug(true);
+	   config.setLoader(ClassLoader.getSystemClassLoader());
 	}
 
+    protected RubyInstanceConfig initRuntimeConfig(final RubyInstanceConfig config) {
+        final RackConfig rackConfig = rackServletContext.getConfig();
+        config.setLoader(Thread.currentThread().getContextClassLoader());
+        final Map<String, String> newEnv = rackConfig.getRuntimeEnvironment();
+        if (newEnv != null) {
+            config.setEnvironment(newEnv);
+        }
+        config.processArguments(rackConfig.getRuntimeArguments());
+        if ( rackConfig.getCompatVersion() != null ) {
+            config.setCompatVersion(rackConfig.getCompatVersion());
+        }
+        String home = getEnvVariable("JRUBY_HOME");
+        try {
+            config.setJRubyHome(home);
+        }
+        catch (Exception e) {
+        	rackServletContext.log(RackLogger.DEBUG, "won't set-up jruby.home from jar", e);
+        }
+        return config;
+    }
+
    /**
-    * Returns eiterh a system property or an environment variable
+    * Returns either a system property or an environment variable
     *
     */
     public String getEnvVariable(String name) {
       String envValue =  System.getProperty(name);
       if (envValue == null) {
-         envValue =  System.getenv(name);
+         envValue = System.getenv(name);
       }
       return envValue;
     }
@@ -110,6 +138,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
     	setLoadPaths(runtimeConfig);
     	Ruby runtime = Ruby.getThreadLocalRuntime();
     	if (runtime == null) {
+    	  System.out.println("RUNTIME " + runtimeConfig);
     	  runtime = Ruby.newInstance(runtimeConfig);
     	}
     	initDriftRuntime(runtime);

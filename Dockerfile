@@ -1,8 +1,8 @@
 FROM debian:latest
 
-ENV JRUBY_VERSION 1.7.15
+ENV JRUBY_VERSION 1.7.19
 ENV STOKESDRIFT_USER stokesdrift
-ENV STOKESDRIFT_VERSION 0.1.9
+ENV STOKESDRIFT_VERSION 0.2.3
 
 /opt/jruby/lib/ruby/gems/shared/gems/stokes-drift-$STOKESDRIFT_VERSION
 

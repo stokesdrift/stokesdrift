@@ -8,7 +8,7 @@ if [ -z "$JRUBY_HOME" ]; then
   echo "Setting JRUBY_HOME to ${JRUBY_HOME}"
 fi
 
-if [ -z "$APP_ROOT"]; then
+if [ -z "$APP_ROOT" ]; then
   echo "NO APP_ROOT SET"
   export APP_ROOT=`pwd`
   echo "Setting APP_ROOT to ${APP_ROOT}"
