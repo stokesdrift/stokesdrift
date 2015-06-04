@@ -28,6 +28,7 @@ dependencies {
   compile "org.quartz-scheduler:quartz:2.2.1"
   compile "org.jboss.weld.se:weld-se-core:2.2.9.Final"
   compile "org.jruby.rack:jruby-rack:1.1.18"
+  compile "org.stokesdrift:accretion:0.0.1-SNAPSHOT"
 
   testCompile 'org.powermock:powermock-mockito-release-full:1.6.1'
   testCompile 'junit:junit:4.11'
