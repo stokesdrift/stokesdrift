@@ -3,6 +3,9 @@ package org.stokesdrift.container;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -46,15 +49,14 @@ public class DriftRackApplicationFactoryTest {
 		RubyInstanceConfig rackConfig = factory.getRuntimeConfig();
 		List<String> loadPaths = rackConfig.getLoadPaths();
 		Assert.assertTrue(loadPaths.size() > 0);
-		System.out.println("LIBS " );
-		for (String loadPath: loadPaths) {
-			System.out.println(loadPath);
-		}
-		
+		Assert.assertTrue(loadPaths.contains("test/home/gem_path"));
 		Assert.assertEquals(jrubyHome, rackConfig.getJRubyHome());
 		
-		IRubyObject rubyObject = runtime.executeScript("ENV.inspect", "jruby_home.rb");
-		System.out.println("WHAT IS THIS " + rubyObject.asString());
+		
+		configRuFile = this.getClass().getClassLoader().getResource("examples/test_paths.rb");
+		byte[] scriptBytes = Files.readAllBytes(Paths.get(configRuFile.toURI()));
+		IRubyObject rubyObject = runtime.executeScript(new String(scriptBytes), "test_paths.rb");
+		Assert.assertEquals("horray",rubyObject.asString().toString());
 		
 	}	
 }
