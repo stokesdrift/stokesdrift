@@ -20,7 +20,7 @@ import org.stokesdrift.container.Application;
 
 /**
  * Sets up the configuration for a rack application
- * 
+ *
  * Jruby-Rack configs:
  * <ul>
  * <li>rackup: Rackup script for configuring how the Rack application is
@@ -40,9 +40,9 @@ import org.stokesdrift.container.Application;
  * application runtimes when pooling is used (default is 4). It does not make
  * sense to set this value higher than</li>
  * </ul>
- * 
+ *
  * @author driedtoast
- * 
+ *
  */
 @Named(value = "rack_application")
 public class RackApplication implements Application {
@@ -52,7 +52,7 @@ public class RackApplication implements Application {
 	private ApplicationConfig config;
 	private static final Logger logger = Logger.getLogger(RackApplication.class.getName());
 	private String gemPathDirectory;
-	
+
 	@Override
 	public DeploymentInfo getDeploymentInfo() {
 		FilterInfo filter = Servlets.filter(RACK_FILTER, RackFilter.class);
@@ -76,20 +76,6 @@ public class RackApplication implements Application {
 		deployInfo.addInitParameter("jruby.rack.layout_class", "RailsFilesystemLayout");
 		deployInfo.addInitParameter("jruby.rack.logging.name", "jul");
 		deployInfo.addInitParameter("app.root", config.getRootPath());
-		
-//		StringBuilder gemPath = new StringBuilder(config.getRootPath());
-//		gemPath.append(File.separator);
-//		gemPath.append("vendor").append(File.separator).append("jruby");
-//
-//		gemPath.append(File.separator).append("1.9"); // TODO needs to come from a config
-//		gemPath.append(File.separator).append("gems"); // TODO need to figure out based on cache vs bundle
-		
-		
-		// withHeader.append("Gem.clear_paths\n");
-		//if (gemPathDirectory != null) {
-		//	withHeader.append("Gem.path.replace('").append(gemPathDirectory).append("')\n");
-		//}
-		
 	}
 
 	protected String getRackupString() {

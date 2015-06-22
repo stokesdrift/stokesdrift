@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -20,11 +21,13 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 
 	private RackContext rackServletContext;
 	private RubyInstanceConfig runtimeConfig;
+	private static final Logger logger = Logger.getLogger(DriftRackApplicationFactory.class.getName());
+
 
 	/**
 	 * Creates a new application instance (without initializing it). <br/>
 	 * NOTE: exception handling is left to the outer factory.
-	 * 
+	 *
 	 * @return new application instance
 	 */
 	@Override
@@ -42,7 +45,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 
 	/**
 	 * Sets all the jar files as load paths
-	 * 
+	 *
 	 * @param config
 	 */
 	protected void setLoadPaths(RubyInstanceConfig config) {
@@ -97,7 +100,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 			config.setCompatVersion(rackConfig.getCompatVersion());
 		}
 		String home = getEnvVariable("JRUBY_HOME");
-		System.out.println("HOME IS " + home);
+		logger.info("stokesdrift.env JRUBY_HOME=" + home);
 		try {
 			if (home != null) {
 				config.setJRubyHome(home);
@@ -107,10 +110,10 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 		}
 		return config;
 	}
-	
+
 	/**
 	 * Returns either a system property or an environment variable
-	 * 
+	 *
 	 */
 	public String getEnvVariable(String name) {
 		String envValue = System.getProperty(name);
@@ -123,7 +126,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 	/**
 	 * Initialize this factory using the given context. <br/>
 	 * NOTE: exception handling is left to the outer factory.
-	 * 
+	 *
 	 * @param rackContext
 	 */
 	@Override
@@ -139,7 +142,6 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 		setLoadPaths(runtimeConfig);
 		Ruby runtime = Ruby.getThreadLocalRuntime();
 		if (runtime == null) {
-			System.out.println("RUNTIME " + runtimeConfig);
 			runtime = Ruby.newInstance(runtimeConfig);
 		}
 		initDriftRuntime(runtime);
@@ -149,9 +151,9 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 	/**
 	 * TODO contribute back hooks for integration purposes Initializes the
 	 * runtime (exports the context, boots the Rack handler).
-	 * 
+	 *
 	 * NOTE: (package) visible due specs
-	 * 
+	 *
 	 * @param runtime
 	 */
 	protected void initDriftRuntime(final Ruby runtime) {

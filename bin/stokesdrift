@@ -19,6 +19,4 @@ def run_server
  exec "#{STOKESDRIFT_DIR}/scripts/server_startup.sh"
 end
 
-# pid = JRubyProcess.fork do
-  run_server
-# end
+run_server
