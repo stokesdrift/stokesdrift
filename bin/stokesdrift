@@ -1,0 +1,22 @@
+#!/usr/bin/env jruby
+
+require 'java'
+
+STOKESDRIFT_DIR = ENV['STOKESDRIFT_DIR'] || File.join(File.expand_path(File.dirname(__FILE__)), '..')
+STOKESDRIFT_LIB_DIR = ENV['STOKESDRIFT_LIB_DIR'] || File.join(STOKESDRIFT_DIR, 'lib')
+
+module JRubyProcess
+  require 'ffi'
+  extend FFI::Library
+  ffi_lib FFI::Library::LIBC
+  attach_function :fork, [], :int
+end
+
+ENV['STOKESDRIFT_LIB_DIR'] = STOKESDRIFT_LIB_DIR
+ENV['STOKESDRIFT_DIR'] = STOKESDRIFT_DIR
+
+def run_server
+ exec "#{STOKESDRIFT_DIR}/scripts/server_startup.sh"
+end
+
+run_server

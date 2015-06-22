@@ -8,7 +8,7 @@ if [ -z "$JRUBY_HOME" ]; then
   echo "Setting JRUBY_HOME to ${JRUBY_HOME}"
 fi
 
-if [ -z "$APP_ROOT"]; then
+if [ -z "$APP_ROOT" ]; then
   echo "NO APP_ROOT SET"
   export APP_ROOT=`pwd`
   echo "Setting APP_ROOT to ${APP_ROOT}"
@@ -46,18 +46,19 @@ fi
 if [ -z "$STOKESDRIFT_LIB_DIR" ]; then
   export STOKESDRIFT_LIB_DIR="${STOKESDRIFT_DIR}/lib"
 fi
+echo $STOKESDRIFT_LIB_DIR
+JAR_LIST=`ls $STOKESDRIFT_LIB_DIR/*.jar`
 
-for i in $STOKESDRIFT_LIB_DIR/*.jar; do
+for i in $JAR_LIST; do
     CLASSPATH=$CLASSPATH:$i
 done
-export CLASSPATH=`echo $CLASSPATH | cut -c2-`
+# export CLASSPATH=`echo $CLASSPATH | cut -c2-`
+export CLASSPATH
 
 if [ -z "$JAVA_OPTS" ]; then
   JAVA_OPTS=""
 fi
-
-
-
+echo "CLASSPATH=${CLASSPATH}"
 java $JAVA_OPTS org.stokesdrift.Server -r $APP_ROOT
 
 #         ROOT_PATH(new String[]{ "-r","-root_path" }, null),

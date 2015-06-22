@@ -1,6 +1,5 @@
 .gradle/*
 build/*
-bin/*
 *.sublime-*
 .project
 .classpath
