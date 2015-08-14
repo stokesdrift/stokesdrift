@@ -25,7 +25,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 
 
 	/**
-	 * Creates a new application instance (without initializing it). <br/>
+	 * Creates a new application instance (without initializing it). 
 	 * NOTE: exception handling is left to the outer factory.
 	 *
 	 * @return new application instance
@@ -124,7 +124,7 @@ public class DriftRackApplicationFactory extends DefaultRackApplicationFactory i
 	}
 
 	/**
-	 * Initialize this factory using the given context. <br/>
+	 * Initialize this factory using the given context. 
 	 * NOTE: exception handling is left to the outer factory.
 	 *
 	 * @param rackContext
