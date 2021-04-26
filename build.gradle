@@ -8,6 +8,9 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'application'
 
+// TODO convert
+// https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:complete_example
+
 configurations {
   compile {
     transitive = true
@@ -48,6 +51,8 @@ mainClassName = 'org.stokesdrift.Server'
 loadProperties("${System.getProperty('user.home')}/gradle.properties")
 
 defaultTasks = ['cleanLibs','assemble', 'copyDependsLibs', 'copyRequireFile']
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
@@ -94,6 +99,7 @@ test.doFirst {
 }
 
 signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
 
@@ -134,12 +140,12 @@ task copyDependsLibs(type: Copy) {
   from "src/main/ruby"
 }
 
+
 uploadArchives {
   repositories {
     mavenDeployer {
-
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
+    
       repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
         authentication(userName: ossrhUsername, password: ossrhPassword)
       }
