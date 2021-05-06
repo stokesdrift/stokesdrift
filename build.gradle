@@ -1,43 +1,3 @@
-
-// Apply plugins
-apply plugin: 'java'
-apply plugin: 'groovy'
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-apply plugin: 'maven'
-apply plugin: 'signing'
-apply plugin: 'application'
-
-// TODO convert
-// https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:complete_example
-
-configurations {
-  compile {
-    transitive = true
-  }
-
-  runtime {
-    extendsFrom compile
-  }
-}
-
-dependencies {
-  compile "org.jruby:jruby-complete:1.7.19"
-  compile 'javax.enterprise:cdi-api:1.1'
-  // compile "com.zaxxer:HikariCP:1.3.8"
-  compile "org.yaml:snakeyaml:1.15"
-  compile "io.undertow:undertow-core:1.2.0.Beta10"
-  compile "io.undertow:undertow-servlet:1.2.0.Beta10"
-  compile "org.quartz-scheduler:quartz:2.2.1"
-  compile "org.jboss.weld.se:weld-se-core:2.2.9.Final"
-  compile "org.jruby.rack:jruby-rack:1.1.18"
-  compile "org.stokesdrift:accretion:0.0.1-SNAPSHOT"
-
-  testCompile 'org.powermock:powermock-mockito-release-full:1.6.1'
-  testCompile 'junit:junit:4.11'
-
-}
-
 buildscript {
   repositories {
     mavenLocal()
@@ -46,25 +6,53 @@ buildscript {
   }
 }
 
-mainClassName = 'org.stokesdrift.Server'
+// Apply plugins
+plugins {
+  id 'maven-publish'
+  id 'publishing'
+  id 'signing'
+  id 'java'
+  id 'groovy'
+  id 'idea'
+  id 'eclipse'
+  id 'application'
+}
 
-loadProperties("${System.getProperty('user.home')}/gradle.properties")
+// TODO convert
+// https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:complete_example
 
-defaultTasks = ['cleanLibs','assemble', 'copyDependsLibs', 'copyRequireFile']
+dependencies {
+  implementation "org.jruby:jruby-complete:1.7.19"
+  implementation 'javax.enterprise:cdi-api:1.1'
+  // compile "com.zaxxer:HikariCP:1.3.8"
+  implementation "org.yaml:snakeyaml:1.15"
+  implementation "io.undertow:undertow-core:1.2.0.Beta10"
+  implementation "io.undertow:undertow-servlet:1.2.0.Beta10"
+  implementation "org.quartz-scheduler:quartz:2.2.1"
+  implementation "org.jboss.weld.se:weld-se-core:2.2.9.Final"
+  implementation "org.jruby.rack:jruby-rack:1.1.18"
+  implementation "org.stokesdrift:accretion:0.0.1-SNAPSHOT"
+
+  testImplementation 'org.powermock:powermock-mockito-release-full:1.6.1'
+  testImplementation 'junit:junit:4.11'
+
+}
+
+application {
+  mainClass = 'org.stokesdrift.Server'
+}
+
+// loadProperties("${System.getProperty('user.home')}/gradle.properties")
+
+defaultTasks = ['assemble', 'copyDependsLibs', 'copyRequireFile']
 
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
-mainClassName = "org.stokesdrift.Server"
-
 repositories {
   mavenLocal()
-  maven { url 'http://deux.gemjars.org' }
   maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
   mavenCentral()
 }
-
 
 sourceSets {
   main {
@@ -73,18 +61,19 @@ sourceSets {
   }
 }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
+compileJava {
+  options.release = 11
 }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
-artifacts {
-  archives javadocJar, sourcesJar
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
 }
 
 test.doFirst {
@@ -99,7 +88,7 @@ test.doFirst {
 }
 
 signing {
-    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    required { isReleaseVersion && gradle.taskGraph.hasTask("publishing") }
     sign configurations.archives
 }
 
@@ -109,20 +98,9 @@ eclipse {
   }
 }
 
-def loadProperties(String sourceFileName) {
-  def config = new Properties()
-  def propFile = new File(sourceFileName)
-  if (propFile.canRead()) {
-    config.load(new FileInputStream(propFile))
-    for (Map.Entry property in config) {
-      project.ext[property.key] = property.value;
-    }
-  }
-}
-
-task cleanLibs << {
+/*task cleanLibs << {
   new File('lib').delete()
-}
+}*/
 
 import org.apache.tools.ant.filters.*
 
@@ -134,52 +112,84 @@ task copyRequireFile(type: Copy) {
 }
 
 task copyDependsLibs(type: Copy) {
+  dependsOn(jar)
   destinationDir = new File('lib')
   from "build/libs"
-  from configurations.runtime
+  from configurations.runtimeClasspath
   from "src/main/ruby"
 }
 
+publishing {
 
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-    
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
+  publications {
+    driftserver(MavenPublication) {
+      pom {
+        groupId "${group}"
+        artifactId "${archivesBaseName}"   
+        version "${version}"
+        from components.java
+        
+        name = 'Stokes Drift Server'
+        packaging = 'jar'
+        description = 'Java ruby rack server'
 
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-
-      pom.project {
-        name 'Stokes Drift Server'
-        packaging 'jar'
-        description 'Service Platform for the modern age'
-        url 'http://www.stokesdrift.com'
-        scm {
-          connection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
-          developerConnection 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
-          url 'git@github.com:stokesdrift/stokesdrift.git'
-        }
-
+        url = "http://www.stokesdrift.com"
+        
         licenses {
           license {
-            name 'MIT License'
-            url 'http://www.opensource.org/licenses/mit-license.php'
+            name = 'MIT License'
+            url = 'http://www.opensource.org/licenses/mit-license.php'
           }
         }
 
         developers {
           developer {
-            id 'driedtoast'
-            name 'Daniel Marchant'
-            email 'driedtoast@gmail.com'
+            id = 'driedtoast'
+            name = 'Daniel Marchant'
+            email = 'driedtoast@gmail.com'
           }
-        }
+        }          
+                  
+        scm {
+          connection = 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
+          developerConnection = 'scm:git:git@github.com:stokesdrift/stokesdrift.git'
+          url = 'git@github.com:stokesdrift/stokesdrift.git'
+        } 
       }
     }
   }
+
+  repositories {
+    maven {
+        def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
+        def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
+        url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+    }
+    maven {
+      url = "https://oss.sonatype.org/content/repositories/snapshots/" 
+      mavenContent {
+        snapshotsOnly()
+      }
+
+      credentials {
+        username "${ossrhUsername}" 
+        password "${ossrhPassword}"
+      } 
+    }
+    
+    maven {
+      url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/" 
+      mavenContent {
+        releasesOnly()
+      }
+
+      credentials {
+        username "${ossrhUsername}" 
+        password "${ossrhPassword}"
+      } 
+    }
+
+  }
+
+
 }
