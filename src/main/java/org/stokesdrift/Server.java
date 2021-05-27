@@ -79,7 +79,7 @@ public class Server {
 	 */
 	public List<Application> loadApplicationDefinitions(ServerConfig config) {
 		logger.log(Level.INFO, "stokesdrift:server:load_app_definitions[status=in_progress]");
-		ApplicationBuilderFactory factory = container.instance().select(ApplicationBuilderFactory.class).get();
+		ApplicationBuilderFactory factory = container.select(ApplicationBuilderFactory.class).get();
 		List<Application> apps = new ArrayList<Application>();
 		List<ApplicationConfig> appConfigs = config.getApplicationConfigs();
 		for (ApplicationConfig appConfig : appConfigs) {
@@ -89,6 +89,8 @@ public class Server {
 			if (app != null) {
 				logger.log(Level.INFO, "stokesdrift:server:loaded_app_definition[app="+appConfig.getName()+", type="+ appConfig.getType() +"]");
 				apps.add(app);
+			} else {
+				logger.log(Level.WARNING, "stokesdrift:server:failed_app_definition[app="+appConfig.getName()+", type="+ appConfig.getType() +"]");
 			}
 		}
 		logger.log(Level.INFO, "stokesdrift:server:load_app_definitions[status=complete]");

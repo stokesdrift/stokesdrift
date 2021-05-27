@@ -6,46 +6,55 @@ import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.inject.spi.Bean;
+
+import jakarta.enterprise.context.Initialized;
+import jakarta.enterprise.context.spi.*;
+// import javax.enterprise.context.spi.Context;
+// import javax.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.Bean;
 
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
-import org.jboss.weld.literal.InitializedLiteral;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.stokesdrift.container.jruby.RackApplicationBuilder;
+
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 
 public class ApplicationBuilderFactoryTest {
 
 	private WeldContainer container;
 	private Weld weld;
-	private Context context;
 	
 	@Before
 	public void setup() {
 		 weld = new Weld();
+		 weld.enableDiscovery();
 		 container = weld.initialize();
-		 context = container.getBeanManager().getContext(ApplicationScoped.class);		 
-		 Assert.assertTrue(context.isActive());
+		 
+		 
+         jakarta.enterprise.context.spi.CreationalContext<Object> creationalContext = container.getBeanManager().createCreationalContext(null);
+
+         
 	}
 	
 	
 	@Test
 	public void testRackApplicationBuilder() throws Exception {
-		ApplicationBuilderFactory factory = container.instance().select(ApplicationBuilderFactory.class).get();
+		ApplicationBuilderFactory factory = container.select(ApplicationBuilderFactory.class).get();
 		ApplicationBuilder rackBuilder = factory.getBuilder("rack");
 		Assert.assertNotNull(rackBuilder);
 	}
 	
 	@Test
 	public void testContext() {
-		Assert.assertTrue(context.isActive());
-		ApplicationBuilderFactory builder = container.instance().select(ApplicationBuilderFactory.class).get();
+		ApplicationBuilderFactory builder = container.select(ApplicationBuilderFactory.class).get();
 		Assert.assertNotNull(builder);
-		
+	
 		Assert.assertNotNull(builder.builder);
 
 		Assert.assertFalse(builder.builder.isUnsatisfied());
@@ -57,16 +66,17 @@ public class ApplicationBuilderFactoryTest {
 		}
 		Assert.assertTrue(builderList.size() > 0 );
 		
-		ApplicationBuilder appBuilder = container.instance().select(ApplicationBuilder.class).get();
+		ApplicationBuilder appBuilder = container.select(ApplicationBuilder.class).get();
 		Assert.assertNotNull(appBuilder);
 		
 	}
 	
 	@Test
 	public void testWeld() throws Exception {
-		container.event().select(ApplicationBuilder.class, InitializedLiteral.APPLICATION).fire(new RackApplicationBuilder(null));
+		container.event().select(ApplicationBuilder.class, Initialized.Literal.APPLICATION).fire(new RackApplicationBuilder(null));
 		
-		ApplicationBuilder builder = container.instance().select(ApplicationBuilder.class).get();
+		
+		ApplicationBuilder builder = container.select(ApplicationBuilder.class).get();
 		Assert.assertNotNull(builder);
 
 		Set<Bean<?>> builders = container.getBeanManager().getBeans("rack_builder");

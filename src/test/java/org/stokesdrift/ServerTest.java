@@ -44,7 +44,7 @@ public class ServerTest {
 		
 		Thread.sleep(4000);
 		
-		URL serverUrl = new URL("http://127.0.0.1:8888/");
+		URL serverUrl = new URL("http://localhost:8888/");
         BufferedReader in = new BufferedReader(new InputStreamReader(serverUrl.openStream()));
         
         StringBuilder sb = new StringBuilder();

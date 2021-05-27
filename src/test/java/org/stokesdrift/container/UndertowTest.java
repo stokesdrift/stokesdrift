@@ -42,6 +42,3 @@ public class UndertowTest {
 	}
 
 }
-
-
-		                                                                                                                               //			.setHandler(new HttpHandler() {                                                  //					                                                                         //					@Override                                                                //					public void handleRequest(HttpServerExchange exchange) throws Exception {//					  System.out.println(exchange);                                          //					}                                                                        //				})                                                                           //        	.build();                                                                        

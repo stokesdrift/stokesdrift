@@ -1,5 +1,6 @@
 package org.stokesdrift.container;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,10 +28,10 @@ public abstract class BaseApplicationBuilder implements ApplicationBuilder {
 	public Application build() { 
 		Application application = null;
 		try {
-			application = getApplicationClass().newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			application = getApplicationClass().getDeclaredConstructor().newInstance();
+		} catch (IllegalArgumentException | InstantiationException | SecurityException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 			logger.log(Level.SEVERE, "stokesdrift:application_builder[status=failed]", e);
-		}
+		} 
 		if (application != null) {
 			application.initializeConfig(config);
 		}

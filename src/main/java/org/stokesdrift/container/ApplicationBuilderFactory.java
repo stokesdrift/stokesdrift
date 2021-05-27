@@ -2,11 +2,11 @@ package org.stokesdrift.container;
 
 import java.util.Iterator;
 
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-
 import org.jboss.weld.literal.NamedLiteral;
+
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 public class ApplicationBuilderFactory {
 

@@ -1,58 +1,21 @@
+# Stokes Drift: Drift Server
 
-# Stokes Drift #
-
-Coming soon, under construction, all that sort of jazz
+Simple jruby rack server based on undertow. 
+Provides a way to run rack apps within a java server.
 
 To build:
 * `gradle`
 * `gem build stokesdrift.gemspec`
 
 To publish:
-* `gradle uploadArchives`
+* `gradle publish`
 * `gem push *.gem`
-
-## Target feature set ##
-
-* Ability to create services that have a start / stop runtime
-* Ability to create jobs running off quartz
-* Application configuration built off etcd / consul / yaml
-** ability to merge files based on environment deployments
-* Ability to package up application to be used in a deployed runtime
-* Ability to cleanly work with docker / containers
-* Target JRuby and eventually Clojure envs ability to load rack or ring apps
-** Pool the web application pieces
-** singleton services
-
-Neccessary evils:
-* Configuration - need to break out a separate jar / maven published component
-** java fork of confd
-** Config listeners for embedding
-** Default to yaml files
-* Registry - in progress
-* Logging - Use gelf and figure out async logging approach
-* IOC injection / CDI support, build objects / services based on this
-* Console screen that can be activated via config (servlet to run ruby code / etc...)
-
-
-Dependencies:
-* Undertow (web processes) - http://undertow.io/documentation/servlet/deployment.html
-* Weld
-* Jruby Rack
-
-
-TODO
-* Fix the test resource pathing via gradle build
-* Startup and including of the resources inclusion
-* Add version file for all references to lib version
-* Add service approach - use samza for queue consumption ?
-** Service Plugin that takes ruby runtime? / registry, bean name + other details
-** Plugin has start / stop events it listens too
-* Add configuration options
-** java fork of confd
-* Add plugin model based on CDI
-* Add logging and gelf support
-* Add newrelic support
-
 
 ## Testing out ##
 run `STOKES_DRIFT_OPTS="-r src/test/resources/examples" gradle run`
+
+## Dependencies:
+
+* Undertow (web processes) - http://undertow.io/documentation/servlet/deployment.html
+* Weld
+* Jruby Rack

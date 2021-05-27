@@ -1,15 +1,15 @@
-package org.stokesdrift.container.jruby;
+package org.stokesdrift.container;
 
-import javax.enterprise.inject.Typed;
-import javax.inject.Named;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import org.stokesdrift.config.ApplicationConfig;
-import org.stokesdrift.container.Application;
-import org.stokesdrift.container.ApplicationBuilder;
-import org.stokesdrift.container.BaseApplicationBuilder;
+import org.stokesdrift.container.jruby.RackApplication;
 
 
 @Named("rack_builder")
+@ApplicationScoped
 @Typed(ApplicationBuilder.class)
 public class RackApplicationBuilder extends BaseApplicationBuilder implements ApplicationBuilder {
 	

@@ -1,7 +1,7 @@
 # coding: utf-8
 Gem::Specification.new do |spec|
   spec.name          = "stokesdrift"
-  spec.version       = "0.2.3"
+  spec.version       = "0.2.4"
   spec.authors       = ["Daniel Marchant"]
   spec.email         = ["dan@driedtoast.com"]
   spec.summary       = %q{Stokes Drift}
@@ -13,9 +13,10 @@ Gem::Specification.new do |spec|
   spec.bindir = 'bin'
   spec.executables << 'stokesdrift'
 
-  spec.add_dependency 'rack', '~> 1.5'
-  spec.add_development_dependency 'bundler', '~> 1.6'
-  spec.add_development_dependency 'rake', '~> 10.1'
-  spec.add_development_dependency 'rspec', '~> 2.14'
+  spec.add_dependency 'rack', '~> 2.1', '>= 2.1.4'
+  
+  spec.add_development_dependency 'bundler', '~> 2.2.17'
+  spec.add_development_dependency 'rake', '~> 11.2.2'
+  spec.add_development_dependency 'rspec', '~> 3.10.0'
 
 end
